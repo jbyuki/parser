@@ -233,7 +233,7 @@ auto infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expre
 {
 	return std::make_shared<AddExpression>(left, p->parse(priority()));
 }
-auto priority() -> int override { return 10; }
+auto priority() -> int override { return 50; }
 
 @expression_structs+=
 struct PrefixSubExpression : Expression
@@ -263,7 +263,7 @@ auto infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expre
 {
 	return std::make_shared<SubExpression>(left, p->parse(priority()-1));
 }
-auto priority() -> int override { return 10; }
+auto priority() -> int override { return 50; }
 
 @expression_structs+=
 struct MulExpression : Expression
@@ -279,7 +279,7 @@ auto infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expre
 	return std::make_shared<MulExpression>(left, p->parse(priority()));
 }
 
-auto priority() -> int override { return 20; }
+auto priority() -> int override { return 60; }
 
 @expression_structs+=
 struct DivExpression : Expression
@@ -295,23 +295,25 @@ auto infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expre
 	return std::make_shared<DivExpression>(left, p->parse(priority()-1));
 }
 
-auto priority() -> int override  { return 20; }
+auto priority() -> int override  { return 60; }
 
 @lpar_token_methods=
 auto prefix(Parser* p) -> std::shared_ptr<Expression> override
 {
-	return p->parse(priority());
+	auto exp = p->parse(priority());
+	p->next(); // skip rpar
+	return exp;
 }
 
-auto priority() -> int override { return 200; }
+auto priority() -> int override { return 20; }
 
 @rpar_token_methods=
 auto prefix(Parser* p) -> std::shared_ptr<Expression> override
 {
-	return p->parse(priority());
+	return nullptr;
 }
 
-auto priority() -> int override { return 210; }
+auto priority() -> int override { return 10; }
 
 @expression_structs+=
 struct NumExpression : Expression
@@ -377,9 +379,11 @@ auto prefix(Parser* p) -> std::shared_ptr<Expression> override
 
 @expression_methods=
 virtual auto eval() -> float = 0;
+virtual auto print() -> std::string = 0;
 
 @evaluate_virtual_method=
 auto eval() -> float override;
+auto print() -> std::string override;
 
 @define_methods+=
 auto AddExpression::eval() -> float { return left->eval() + right->eval(); }
@@ -389,5 +393,17 @@ auto DivExpression::eval() -> float { return left->eval() / right->eval(); }
 auto PrefixSubExpression::eval() -> float { return -left->eval(); }
 
 @define_methods+=
+auto AddExpression::print() -> std::string { return "(+ " + left->print() + " " + right->print() + ")"; }
+auto SubExpression::print() -> std::string { return "(- " + left->print() + " " + right->print() + ")"; }
+auto MulExpression::print() -> std::string { return "(* " + left->print() + " " + right->print() + ")"; }
+auto DivExpression::print() -> std::string { return "(/ " + left->print() + " " + right->print() + ")"; }
+auto PrefixSubExpression::print() -> std::string { return "(-" + left->print() + ")";  }
+
+
+@define_methods+=
 auto NumExpression::eval() -> float { return num; }
 auto SymExpression::eval() -> float { return ref; }
+
+@define_methods+=
+auto NumExpression::print() -> std::string { return std::to_string(num); }
+auto SymExpression::print() -> std::string { return "[sym " + std::to_string((int)((void*)(&ref))) + "]"; }
