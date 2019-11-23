@@ -147,6 +147,9 @@ struct SymToken : Token
 	SymToken(std::string sym) : sym(sym) {}
 };
 
+@includes+=
+#include <cctype>
+
 @tokenize_symbol=
 else if((c >= 'a' && c <= 'z') || (c >= 'A' && 'Z')) { 
 	// add mul token if num is just before symbol (2x => 2*x)
@@ -154,7 +157,13 @@ else if((c >= 'a' && c <= 'z') || (c >= 'A' && 'Z')) {
 		tokens.emplace_back(new MulToken());
 	}
 
-	std::string sym; iss >> sym; 
+	std::string sym;
+	
+	do {
+		iss >> c;
+		sym += c;
+	} while(std::isalnum(iss.peek()));
+
 	tokens.emplace_back(new SymToken{sym});
 }
 
@@ -337,38 +346,36 @@ struct SymTableEntry
 	float value;
 };
 
-@includes+=
-#include <array>
-
 @member_variables+=
-std::array<SymTableEntry, 20> symbol_table;
+std::vector<std::shared_ptr<SymTableEntry>> symbol_table;
 
 @methods+=
-auto getSymbol(const std::string& name) -> float&;
+auto getSymbol(const std::string& name) -> std::shared_ptr<SymTableEntry>;
 
 @define_methods+=
-auto Parser::getSymbol(const std::string& name) -> float&
+auto Parser::getSymbol(const std::string& name) -> std::shared_ptr<SymTableEntry>
 {
-	@return_existing_or_create_for_new
-	return symbol_table[0].value; // if no more space in array
+	@return_if_existing
+	@create_for_new
 }
 
-@return_existing_or_create_for_new=
+@return_if_existing=
 for(auto& sym : symbol_table) {
-	if(sym.name == name) {
-		return sym.value;
-	} else if(sym.name == "") {
-		sym.name = name;
-		return sym.value;
+	if(sym->name == name) {
+		return sym;
 	}
 }
+
+@create_for_new=
+symbol_table.emplace_back(new SymTableEntry{name, 0.f});
+return symbol_table.back();
 
 @expression_structs+=
 struct SymExpression : Expression
 {
 	@evaluate_virtual_method
-	float& ref;
-	SymExpression(float& ref) : ref(ref) {}
+	std::shared_ptr<SymTableEntry> sym;
+	SymExpression(std::shared_ptr<SymTableEntry> sym) : sym(sym) {}
 };
 
 @sym_token_methods=
@@ -402,8 +409,8 @@ auto PrefixSubExpression::print() -> std::string { return "(-" + left->print() +
 
 @define_methods+=
 auto NumExpression::eval() -> float { return num; }
-auto SymExpression::eval() -> float { return ref; }
+auto SymExpression::eval() -> float { return sym->value; }
 
 @define_methods+=
 auto NumExpression::print() -> std::string { return std::to_string(num); }
-auto SymExpression::print() -> std::string { return "[sym " + std::to_string((int)((void*)(&ref))) + "]"; }
+auto SymExpression::print() -> std::string { return "[sym " + sym->name + "]"; }
