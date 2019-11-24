@@ -255,7 +255,7 @@ struct PrefixSubExpression : Expression
 @sub_token_methods=
 auto prefix(Parser* p) -> std::shared_ptr<Expression> override
 {
-	return std::make_shared<PrefixSubExpression>(p->parse(100));
+	return std::make_shared<PrefixSubExpression>(p->parse(90));
 }
 
 
@@ -315,8 +315,6 @@ auto prefix(Parser* p) -> std::shared_ptr<Expression> override
 }
 
 auto priority() -> int override { return 100; }
-
-
 
 
 @rpar_token_methods=
@@ -398,6 +396,23 @@ struct FunExpression : Expression
 @includes+=
 #include <unordered_map>
 
+@methods+=
+auto removeSymbol(const std::string& name) -> void;
+
+@define_methods+=
+auto Parser::removeSymbol(const std::string& name) -> void
+{
+	@remove_symbol_if_exists
+}
+
+@remove_symbol_if_exists=
+for(auto it=symbol_table.begin(); it!=symbol_table.end(); it++) {
+	if((*it)->name  == name) {
+		symbol_table.erase(it);
+		break;
+	}
+}
+
 @lpar_token_methods+=
 auto infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expression> override
 {
@@ -405,10 +420,11 @@ auto infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expre
 		@list_supported_functions
 	};
 
-	auto exp = p->parse(priority());
+	auto exp = p->parse(20);
 	p->next(); // skip rpar
 
 	auto name = std::dynamic_pointer_cast<SymExpression>(left)->sym->name;
+	p->removeSymbol(name); // remove function name as symbol
 	return std::make_shared<FunExpression>(funs[name], exp);
 }
 
@@ -462,3 +478,32 @@ auto FunExpression::print() -> std::string { return "([fun] " + left->print() + 
 {"asin", std::asinf},
 {"acos", std::acosf},
 {"atan", std::atanf},
+
+@token_struct+=
+struct ExpToken : Token
+{
+	@exp_token_methods
+};
+
+@tokenize_op+=
+else if(c == '^') { iss >> c; tokens.emplace_back(new ExpToken()); }
+
+@expression_structs+=
+struct ExpExpression : Expression
+{
+	@evaluate_virtual_method
+	std::shared_ptr<Expression> left, right;
+
+	ExpExpression(std::shared_ptr<Expression> left, std::shared_ptr<Expression> right) : left(left), right(right) {}
+};
+
+@exp_token_methods=
+auto infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expression> override
+{
+	return std::make_shared<ExpExpression>(left, p->parse(priority()));
+}
+auto priority() -> int override { return 70; }
+
+@define_methods+=
+auto ExpExpression::eval() -> float { return std::powf(left->eval(), right->eval()); }
+auto ExpExpression::print() -> std::string { return "(^ " + left->print() + " " + right->print() + ")"; }
