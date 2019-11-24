@@ -314,14 +314,12 @@ auto prefix(Parser* p) -> std::shared_ptr<Expression> override
 	return exp;
 }
 
-auto priority() -> int override { return 20; }
+auto priority() -> int override { return 100; }
+
+
+
 
 @rpar_token_methods=
-auto prefix(Parser* p) -> std::shared_ptr<Expression> override
-{
-	return nullptr;
-}
-
 auto priority() -> int override { return 10; }
 
 @expression_structs+=
@@ -384,6 +382,36 @@ auto prefix(Parser* p) -> std::shared_ptr<Expression> override
 	return std::make_shared<SymExpression>(p->getSymbol(sym));
 }
 
+@includes+=
+#include <functional>
+
+@expression_structs+=
+// function calls
+struct FunExpression : Expression
+{
+	@evaluate_virtual_method
+	std::function<float(float)> f;
+	std::shared_ptr<Expression> left;
+	FunExpression(std::function<float(float)> f, std::shared_ptr<Expression> left) : f(f), left(left) {}
+};
+
+@includes+=
+#include <unordered_map>
+
+@lpar_token_methods+=
+auto infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expression> override
+{
+	static std::unordered_map<std::string, std::function<float(float)>> funs = {
+		@list_supported_functions
+	};
+
+	auto exp = p->parse(priority());
+	p->next(); // skip rpar
+
+	auto name = std::dynamic_pointer_cast<SymExpression>(left)->sym->name;
+	return std::make_shared<FunExpression>(funs[name], exp);
+}
+
 @expression_methods=
 virtual auto eval() -> float = 0;
 virtual auto print() -> std::string = 0;
@@ -414,3 +442,23 @@ auto SymExpression::eval() -> float { return sym->value; }
 @define_methods+=
 auto NumExpression::print() -> std::string { return std::to_string(num); }
 auto SymExpression::print() -> std::string { return "[sym " + sym->name + "]"; }
+
+@define_methods+=
+auto FunExpression::eval() -> float { return f(left->eval()); }
+auto FunExpression::print() -> std::string { return "([fun] " + left->print() + ")"; }
+
+@includes+=
+#include <cmath>
+
+@list_supported_functions=
+{"sin", std::sinf},
+{"cos", std::cosf},
+{"tan", std::tanf},
+{"ln", std::logf},
+{"log", std::log10f},
+{"exp", std::expf},
+{"exp", std::expf},
+{"sqrt", std::sqrtf},
+{"asin", std::asinf},
+{"acos", std::acosf},
+{"atan", std::atanf},
