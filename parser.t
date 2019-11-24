@@ -31,6 +31,9 @@ struct Parser
 @define_constructor
 @define_methods
 
+@includes=
+#include <string>
+
 @constructor=
 Parser(const std::string& input);
 
@@ -54,13 +57,13 @@ struct Token
 	virtual auto priority() -> int { return 0; }
 };
 
-@includes=
+@includes+=
 #include <vector>
 #include <memory>
 
 @member_variables=
 std::vector<std::shared_ptr<Token>> tokens;
-int i=0;
+int i=0; // current token
 
 @includes+=
 #include <sstream>
@@ -152,18 +155,46 @@ struct SymToken : Token
 
 @tokenize_symbol=
 else if((c >= 'a' && c <= 'z') || (c >= 'A' && 'Z')) { 
-	// add mul token if num is just before symbol (2x => 2*x)
-	if(tokens.size() > 0 && std::dynamic_pointer_cast<NumToken>(tokens.back())) {
-		tokens.emplace_back(new MulToken());
-	}
+	@add_mul_token_if_num_just_before
+	@get_all_char_sym
+	@create_num_token_if_constant
+	@otherwise_crete_sym_token
+}
 
-	std::string sym;
-	
-	do {
-		iss >> c;
-		sym += c;
-	} while(std::isalnum(iss.peek()));
+@add_mul_token_if_num_just_before=
+if(tokens.size() > 0 && std::dynamic_pointer_cast<NumToken>(tokens.back())) {
+	tokens.emplace_back(new MulToken());
+}
 
+@get_all_char_sym=
+std::string sym;
+do {
+	iss >> c;
+	sym += c;
+} while(std::isalnum(iss.peek()));
+
+@includes+=
+#include <unordered_map>
+
+@create_num_token_if_constant=
+static std::unordered_map<std::string, float> constants = {
+	@list_constants
+};
+
+if(constants.find(sym) != constants.end()) {
+	tokens.emplace_back(new NumToken{constants[sym]});
+}
+
+@includes+=
+#define _USE_MATH_DEFINES
+#include <cmath>
+
+@list_constants=
+{"pi", M_PI},
+{"mu0", 4*M_PI*1e-7},
+
+@otherwise_crete_sym_token=
+else {
 	tokens.emplace_back(new SymToken{sym});
 }
 
@@ -393,8 +424,6 @@ struct FunExpression : Expression
 	FunExpression(std::function<float(float)> f, std::shared_ptr<Expression> left) : f(f), left(left) {}
 };
 
-@includes+=
-#include <unordered_map>
 
 @methods+=
 auto removeSymbol(const std::string& name) -> void;
@@ -463,8 +492,6 @@ auto SymExpression::print() -> std::string { return "[sym " + sym->name + "]"; }
 auto FunExpression::eval() -> float { return f(left->eval()); }
 auto FunExpression::print() -> std::string { return "([fun] " + left->print() + ")"; }
 
-@includes+=
-#include <cmath>
 
 @list_supported_functions=
 {"sin", std::sinf},
