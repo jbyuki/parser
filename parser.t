@@ -12,11 +12,8 @@ struct Parser;
 @base_expression_structs
 @base_token_struct
 
-@symbol_table_struct
-
 struct Parser
 {
-	@constructor
 	@methods
 	@member_variables
 };
@@ -28,26 +25,28 @@ struct Parser
 @parser.cpp=
 #include "parser.h"
 
-@define_constructor
 @define_methods
 
 @includes=
 #include <string>
-
-@constructor=
-Parser(const std::string& input);
-
-@define_constructor=
-Parser::Parser(const std::string& input)
-{
-	@tokenize_string
-}
 
 @base_expression_structs=
 struct Expression
 {
 	@expression_methods
 };
+
+@methods=
+auto process(const std::string& input) -> std::shared_ptr<Expression>;
+
+@define_methods=
+auto Parser::process(const std::string& input) -> std::shared_ptr<Expression>
+{
+	@clear_tokens
+	@tokenize_string
+	@parse_string
+}
+
 
 @base_token_struct=
 struct Token
@@ -65,8 +64,12 @@ struct Token
 std::vector<std::shared_ptr<Token>> tokens;
 int i=0; // current token
 
+@clear_tokens=
+tokens.clear();
+
 @includes+=
 #include <sstream>
+
 
 @tokenize_string=
 std::istringstream iss(input);
@@ -186,12 +189,12 @@ if(constants.find(sym) != constants.end()) {
 }
 
 @includes+=
-#define _USE_MATH_DEFINES
 #include <cmath>
 
 @list_constants=
-{"pi", M_PI},
-{"mu0", 4*M_PI*1e-7},
+// atan(1)*4 = pi
+{"pi", 4.f*atanf(1.f)},
+{"mu0", 4*(4.f*atanf(1.f))*1e-7f},
 
 @otherwise_crete_sym_token=
 else {
@@ -207,10 +210,10 @@ else {
 	iss >> c; 
 }
 
-@methods=
+@methods+=
 auto next() -> std::shared_ptr<Token>;
 
-@define_methods=
+@define_methods+=
 auto Parser::next() -> std::shared_ptr<Token>
 {
 	return tokens[i++];
@@ -233,6 +236,9 @@ auto Parser::get() -> std::shared_ptr<Token>
 {
 	return tokens[i];
 }
+
+@parse_string=
+return parse();
 
 @methods+=
 auto parse(int p=0) -> std::shared_ptr<Expression>;
@@ -365,50 +371,44 @@ auto prefix(Parser*) -> std::shared_ptr<Expression> override
 	return std::make_shared<NumExpression>(num);
 }
 
-
-@symbol_table_struct=
-struct SymTableEntry
-{
-	std::string name;
-	float value;
-};
+@includes+=
+#include <map>
 
 @member_variables+=
-std::vector<std::shared_ptr<SymTableEntry>> symbol_table;
+std::map<std::string, std::shared_ptr<float>> symbol_table;
 
 @methods+=
-auto getSymbol(const std::string& name) -> std::shared_ptr<SymTableEntry>;
+auto getSymbol(const std::string& name) -> std::shared_ptr<float>;
 
 @define_methods+=
-auto Parser::getSymbol(const std::string& name) -> std::shared_ptr<SymTableEntry>
+auto Parser::getSymbol(const std::string& name) -> std::shared_ptr<float>
 {
 	@return_if_existing
 	@create_for_new
 }
 
 @return_if_existing=
-for(auto& sym : symbol_table) {
-	if(sym->name == name) {
-		return sym;
-	}
+if(symbol_table.find(name) != symbol_table.end()) {
+	return symbol_table[name];
 }
 
 @create_for_new=
-symbol_table.emplace_back(new SymTableEntry{name, 0.f});
-return symbol_table.back();
+symbol_table[name] = std::make_shared<float>(0.f);
+return symbol_table[name];
 
 @expression_structs+=
 struct SymExpression : Expression
 {
 	@evaluate_virtual_method
-	std::shared_ptr<SymTableEntry> sym;
-	SymExpression(std::shared_ptr<SymTableEntry> sym) : sym(sym) {}
+	std::string name;
+	std::shared_ptr<float> value;
+	SymExpression(const std::string& name, std::shared_ptr<float> value) : name(name), value(value) {}
 };
 
 @sym_token_methods=
 auto prefix(Parser* p) -> std::shared_ptr<Expression> override
 {
-	return std::make_shared<SymExpression>(p->getSymbol(sym));
+	return std::make_shared<SymExpression>(sym, p->getSymbol(sym));
 }
 
 @includes+=
@@ -419,9 +419,10 @@ auto prefix(Parser* p) -> std::shared_ptr<Expression> override
 struct FunExpression : Expression
 {
 	@evaluate_virtual_method
+	std::string name;
 	std::function<float(float)> f;
 	std::shared_ptr<Expression> left;
-	FunExpression(std::function<float(float)> f, std::shared_ptr<Expression> left) : f(f), left(left) {}
+	FunExpression(const std::string& name, std::function<float(float)> f, std::shared_ptr<Expression> left) : name(name), f(f), left(left) {}
 };
 
 
@@ -435,12 +436,7 @@ auto Parser::removeSymbol(const std::string& name) -> void
 }
 
 @remove_symbol_if_exists=
-for(auto it=symbol_table.begin(); it!=symbol_table.end(); it++) {
-	if((*it)->name  == name) {
-		symbol_table.erase(it);
-		break;
-	}
-}
+symbol_table.erase(name);
 
 @lpar_token_methods+=
 auto infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expression> override
@@ -452,9 +448,9 @@ auto infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expre
 	auto exp = p->parse(20);
 	p->next(); // skip rpar
 
-	auto name = std::dynamic_pointer_cast<SymExpression>(left)->sym->name;
+	auto name = std::dynamic_pointer_cast<SymExpression>(left)->name;
 	p->removeSymbol(name); // remove function name as symbol
-	return std::make_shared<FunExpression>(funs[name], exp);
+	return std::make_shared<FunExpression>(name, funs[name], exp);
 }
 
 @expression_methods=
@@ -482,15 +478,15 @@ auto PrefixSubExpression::print() -> std::string { return "(-" + left->print() +
 
 @define_methods+=
 auto NumExpression::eval() -> float { return num; }
-auto SymExpression::eval() -> float { return sym->value; }
+auto SymExpression::eval() -> float { return (*value); }
 
 @define_methods+=
 auto NumExpression::print() -> std::string { return std::to_string(num); }
-auto SymExpression::print() -> std::string { return "[sym " + sym->name + "]"; }
+auto SymExpression::print() -> std::string { return "[sym " + name + "]"; }
 
 @define_methods+=
 auto FunExpression::eval() -> float { return f(left->eval()); }
-auto FunExpression::print() -> std::string { return "([fun] " + left->print() + ")"; }
+auto FunExpression::print() -> std::string { return "([" + name + "] " + left->print() + ")"; }
 
 
 @list_supported_functions=
