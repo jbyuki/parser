@@ -66,6 +66,7 @@ int i=0; // current token
 
 @clear_tokens=
 tokens.clear();
+i = 0;
 
 @includes+=
 #include <sstream>
