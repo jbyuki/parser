@@ -347,7 +347,7 @@ auto priority() -> int override  { return 60; }
 @lpar_token_methods=
 auto prefix(Parser* p) -> std::shared_ptr<Expression> override
 {
-	auto exp = p->parse(priority());
+	auto exp = p->parse(20);
 	p->next(); // skip rpar
 	return exp;
 }

@@ -205,7 +205,7 @@ struct LParToken : Token
 {
 	auto prefix(Parser* p) -> std::shared_ptr<Expression> override
 	{
-		auto exp = p->parse(priority());
+		auto exp = p->parse(20);
 		p->next(); // skip rpar
 		return exp;
 	}
