@@ -217,6 +217,10 @@ auto next() -> std::shared_ptr<Token>;
 @define_methods+=
 auto Parser::next() -> std::shared_ptr<Token>
 {
+	if(i >= tokens.size()) {
+		return nullptr;
+	}
+
 	return tokens[i++];
 }
 
@@ -248,6 +252,10 @@ auto parse(int p=0) -> std::shared_ptr<Expression>;
 auto Parser::parse(int p) -> std::shared_ptr<Expression>
 {
 	auto t = next();
+	if(!t) {
+		return nullptr;
+	}
+
 	auto exp = t->prefix(this);
 
 	while(!finish() && p <= get()->priority()) {
@@ -278,7 +286,12 @@ struct AddExpression : Expression
 @add_token_methods+=
 auto infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expression> override
 {
-	return std::make_shared<AddExpression>(left, p->parse(priority()));
+	auto t = p->parse(priority());
+	if(!t) {
+		return nullptr;
+	}
+
+	return std::make_shared<AddExpression>(left, t);
 }
 auto priority() -> int override { return 50; }
 
@@ -308,7 +321,11 @@ struct SubExpression : Expression
 @sub_token_methods+=
 auto infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expression> override
 {
-	return std::make_shared<SubExpression>(left, p->parse(priority()-1));
+	auto t = p->parse(priority()-1);
+	if(!t) {
+		return nullptr;
+	}
+	return std::make_shared<SubExpression>(left, t);
 }
 auto priority() -> int override { return 50; }
 
@@ -323,7 +340,12 @@ struct MulExpression : Expression
 @mul_token_methods=
 auto infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expression> override
 {
-	return std::make_shared<MulExpression>(left, p->parse(priority()));
+	auto t = p->parse(priority());
+	if(!t) {
+		return nullptr;
+	}
+
+	return std::make_shared<MulExpression>(left, t);
 }
 
 auto priority() -> int override { return 60; }
@@ -339,7 +361,12 @@ struct DivExpression : Expression
 @div_token_methods=
 auto infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expression> override
 {
-	return std::make_shared<DivExpression>(left, p->parse(priority()-1));
+
+	auto t = p->parse(priority()-1);
+	if(!t) {
+		return nullptr;
+	}
+	return std::make_shared<DivExpression>(left, t);
 }
 
 auto priority() -> int override  { return 60; }
@@ -447,6 +474,10 @@ auto infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expre
 	};
 
 	auto exp = p->parse(20);
+	if(!exp) {
+		return nullptr;
+	}
+
 	p->next(); // skip rpar
 
 	auto name = std::dynamic_pointer_cast<SymExpression>(left)->name;
@@ -524,7 +555,12 @@ struct ExpExpression : Expression
 @exp_token_methods=
 auto infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expression> override
 {
-	return std::make_shared<ExpExpression>(left, p->parse(priority()));
+	auto t = p->parse(priority());
+	if(!t) {
+		return nullptr;
+	}
+
+	return std::make_shared<ExpExpression>(left, t);
 }
 auto priority() -> int override { return 70; }
 
