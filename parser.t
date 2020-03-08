@@ -306,7 +306,12 @@ struct PrefixSubExpression : Expression
 @sub_token_methods=
 auto prefix(Parser* p) -> std::shared_ptr<Expression> override
 {
-	return std::make_shared<PrefixSubExpression>(p->parse(90));
+	auto t = p->parse(90);
+	if(!t) {
+		return nullptr;
+	}
+
+	return std::make_shared<PrefixSubExpression>(t);
 }
 
 
@@ -375,6 +380,10 @@ auto priority() -> int override  { return 60; }
 auto prefix(Parser* p) -> std::shared_ptr<Expression> override
 {
 	auto exp = p->parse(20);
+	if(!exp) {
+		return nullptr;
+	}
+
 	p->next(); // skip rpar
 	return exp;
 }
