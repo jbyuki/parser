@@ -258,7 +258,7 @@ auto Parser::parse(int p) -> std::shared_ptr<Expression>
 
 	auto exp = t->prefix(this);
 
-	while(!finish() && p <= get()->priority()) {
+	while(exp && !finish() && p <= get()->priority()) {
 		t = next();
 		exp = t->infix(this, exp);
 	}
