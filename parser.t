@@ -576,3 +576,15 @@ auto priority() -> int override { return 70; }
 @define_methods+=
 auto ExpExpression::eval() -> float { return std::powf(left->eval(), right->eval()); }
 auto ExpExpression::print() -> std::string { return "(^ " + left->print() + " " + right->print() + ")"; }
+
+@methods+=
+auto clear() -> void;
+
+@define_methods+=
+auto Parser::clear() -> void
+{
+	@clean_up_all
+}
+
+@clean_up_all=
+symbol_table.clear();
