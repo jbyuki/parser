@@ -116,15 +116,16 @@ else if(c == '*') { iss >> c; tokens.emplace_back(new MulToken()); }
 else if(c == '/') { iss >> c; tokens.emplace_back(new DivToken()); }
 
 @token_struct+=
+struct RParToken : Token
+{
+	@rpar_token_methods
+};
+
 struct LParToken : Token
 {
 	@lpar_token_methods
 };
 
-struct RParToken : Token
-{
-	@rpar_token_methods
-};
 
 @tokenize_par=
 else if(c == '(') { iss >> c; tokens.emplace_back(new LParToken()); }
@@ -239,6 +240,10 @@ auto get() -> std::shared_ptr<Token>;
 @define_methods+=
 auto Parser::get() -> std::shared_ptr<Token>
 {
+	if(i >= tokens.size()) {
+		return nullptr;
+	}
+
 	return tokens[i];
 }
 
@@ -384,10 +389,18 @@ auto prefix(Parser* p) -> std::shared_ptr<Expression> override
 		return nullptr;
 	}
 
-	p->next(); // skip rpar
+	@check_rpar
 	return exp;
 }
 
+@check_rpar=
+auto rpar = p->get();
+if(!rpar || !std::dynamic_pointer_cast<RParToken>(rpar)) {
+	return nullptr;
+}
+p->next(); // skip rpar
+
+@lpar_token_methods+=
 auto priority() -> int override { return 100; }
 
 
@@ -487,7 +500,7 @@ auto infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expre
 		return nullptr;
 	}
 
-	p->next(); // skip rpar
+	@check_rpar
 
 	auto name = std::dynamic_pointer_cast<SymExpression>(left)->name;
 	p->removeSymbol(name); // remove function name as symbol

@@ -69,6 +69,10 @@ auto Parser::process(const std::string& input) -> std::shared_ptr<Expression>
 
 auto Parser::next() -> std::shared_ptr<Token>
 {
+	if(i >= tokens.size()) {
+		return nullptr;
+	}
+
 	return tokens[i++];
 }
 
@@ -79,15 +83,23 @@ auto Parser::finish() -> bool
 
 auto Parser::get() -> std::shared_ptr<Token>
 {
+	if(i >= tokens.size()) {
+		return nullptr;
+	}
+
 	return tokens[i];
 }
 
 auto Parser::parse(int p) -> std::shared_ptr<Expression>
 {
 	auto t = next();
+	if(!t) {
+		return nullptr;
+	}
+
 	auto exp = t->prefix(this);
 
-	while(!finish() && p <= get()->priority()) {
+	while(exp && !finish() && p <= get()->priority()) {
 		t = next();
 		exp = t->infix(this, exp);
 	}
@@ -139,4 +151,10 @@ auto FunExpression::print() -> std::string { return "([" + name + "] " + left->p
 
 auto ExpExpression::eval() -> float { return std::powf(left->eval(), right->eval()); }
 auto ExpExpression::print() -> std::string { return "(^ " + left->print() + " " + right->print() + ")"; }
+
+auto Parser::clear() -> void
+{
+	symbol_table.clear();
+}
+
 

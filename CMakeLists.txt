@@ -5,4 +5,6 @@ project(parser)
 add_executable(parser
 	parser.cpp
 	parser.h
+	test_utils.cpp
+	test_utils.h
 	test.cpp)
