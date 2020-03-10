@@ -3,7 +3,7 @@ on: push
 
 jobs:
     build-ubuntu:
-        name: Build and test
+        name: Test Linux
         runs-on: ubuntu-latest
         steps:
         - name: clone repository
@@ -20,7 +20,7 @@ jobs:
               cd build
               ./parser
     build-windows:
-        name: Build and test
+        name: Test Windows
         runs-on: windows-latest
         steps:
         - name: clone repository
@@ -36,4 +36,5 @@ jobs:
           run: |
               cd build
               cd Debug
+              dir
               parser.exe
