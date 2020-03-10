@@ -4,7 +4,7 @@ parser
 Math parsing libary.
 
 Features include:
-* basic arthimetic operations (+, -, \*, /)
+* basic arithmetic operations (+, -, \*, /)
 * parenthesis
 * variables
 * common math functions (cos, sin, tan, sqrt, ...)
