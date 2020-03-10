@@ -1,6 +1,8 @@
 parser
 ======
 
+[build status](https://github.com/jbyuki/parser/workflows/run_tests/badge.svg)
+
 Math parsing libary.
 
 Features include:
