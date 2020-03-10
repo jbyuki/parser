@@ -323,11 +323,8 @@ auto main() -> int
 	
 	test.showResults();
 	
-	if(test.num_failed > 0) {
-		return EXIT_FAILURE;
-	}
-	
-	
+
+	system("PAUSE");
 	return 0;
 }
 

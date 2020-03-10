@@ -6,7 +6,8 @@ auto main() -> int
 	@init_tester
 	@test_cases
 	@print_tester_results
-	@return_failure_if_failed_tests
+
+	system("PAUSE");
 	return 0;
 }
 
@@ -18,12 +19,6 @@ Test test;
 
 @print_tester_results=
 test.showResults();
-
-@return_failure_if_failed_tests=
-if(test.num_failed > 0) {
-	return EXIT_FAILURE;
-}
-
 
 @includes+=
 #include <iostream>

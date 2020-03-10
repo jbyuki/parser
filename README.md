@@ -1,7 +1,7 @@
 parser
 ======
 
-![Run Tests](https://github.com/jbyuki/parser/workflows/Run%20Tests/badge.svg?branch=master)
+![build](https://github.com/jbyuki/parser/workflows/build/badge.svg?branch=master)
 
 Math parsing libary.
 

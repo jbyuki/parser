@@ -1,9 +1,9 @@
-name: Run Tests
+name: build
 on: push
 
 jobs:
     build-ubuntu:
-        name: Test Linux
+        name: build linux
         runs-on: ubuntu-latest
         steps:
         - name: clone repository
@@ -15,12 +15,8 @@ jobs:
               cmake ..
         - name: build
           run: cmake --build build
-        - name: test
-          run: |
-              cd build
-              ./parser
     build-windows:
-        name: Test Windows
+        name: build windows
         runs-on: windows-latest
         steps:
         - name: clone repository
@@ -32,8 +28,3 @@ jobs:
               cmake ..
         - name: build
           run: cmake --build build --config Debug
-        - name: test
-          run: |
-              cd build
-              cd Debug
-              .\parser.exe
