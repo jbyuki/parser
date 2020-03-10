@@ -27,6 +27,14 @@ struct Expression
 	virtual auto eval() -> float = 0;
 	virtual auto print() -> std::string = 0;
 	
+	virtual auto derive(std::shared_ptr<float> sym) -> std::shared_ptr<Expression> = 0;
+	
+	virtual auto clone() -> std::shared_ptr<Expression> = 0;
+	
+	auto isZero() -> bool;
+	
+	auto isOne() -> bool;
+	
 };
 
 struct Token
@@ -67,6 +75,10 @@ struct AddExpression : Expression
 	auto eval() -> float override;
 	auto print() -> std::string override;
 	
+	auto derive(std::shared_ptr<float> sym) -> std::shared_ptr<Expression> override;
+	
+	auto clone() -> std::shared_ptr<Expression> override;
+	
 	std::shared_ptr<Expression> left, right;
 
 	AddExpression(std::shared_ptr<Expression> left, std::shared_ptr<Expression> right) : left(left), right(right) {}
@@ -77,6 +89,10 @@ struct PrefixSubExpression : Expression
 	auto eval() -> float override;
 	auto print() -> std::string override;
 	
+	auto derive(std::shared_ptr<float> sym) -> std::shared_ptr<Expression> override;
+	
+	auto clone() -> std::shared_ptr<Expression> override;
+	
 	std::shared_ptr<Expression> left;
 	PrefixSubExpression(std::shared_ptr<Expression> left) : left(left) {}
 };
@@ -85,6 +101,10 @@ struct SubExpression : Expression
 {
 	auto eval() -> float override;
 	auto print() -> std::string override;
+	
+	auto derive(std::shared_ptr<float> sym) -> std::shared_ptr<Expression> override;
+	
+	auto clone() -> std::shared_ptr<Expression> override;
 	
 	std::shared_ptr<Expression> left, right;
 	SubExpression(std::shared_ptr<Expression> left, std::shared_ptr<Expression> right) : left(left), right(right) {}
@@ -95,6 +115,10 @@ struct MulExpression : Expression
 	auto eval() -> float override;
 	auto print() -> std::string override;
 	
+	auto derive(std::shared_ptr<float> sym) -> std::shared_ptr<Expression> override;
+	
+	auto clone() -> std::shared_ptr<Expression> override;
+	
 	std::shared_ptr<Expression> left, right;
 	MulExpression(std::shared_ptr<Expression> left, std::shared_ptr<Expression> right) : left(left), right(right) {}
 };
@@ -103,6 +127,10 @@ struct DivExpression : Expression
 {
 	auto eval() -> float override;
 	auto print() -> std::string override;
+	
+	auto derive(std::shared_ptr<float> sym) -> std::shared_ptr<Expression> override;
+	
+	auto clone() -> std::shared_ptr<Expression> override;
 	
 	std::shared_ptr<Expression> left, right;
 	DivExpression(std::shared_ptr<Expression> left, std::shared_ptr<Expression> right) : left(left), right(right) {}
@@ -113,6 +141,10 @@ struct NumExpression : Expression
 	auto eval() -> float override;
 	auto print() -> std::string override;
 	
+	auto derive(std::shared_ptr<float> sym) -> std::shared_ptr<Expression> override;
+	
+	auto clone() -> std::shared_ptr<Expression> override;
+	
 	float num;
 	NumExpression(float num) : num(num) {}
 };
@@ -121,6 +153,10 @@ struct SymExpression : Expression
 {
 	auto eval() -> float override;
 	auto print() -> std::string override;
+	
+	auto derive(std::shared_ptr<float> sym) -> std::shared_ptr<Expression> override;
+	
+	auto clone() -> std::shared_ptr<Expression> override;
 	
 	std::string name;
 	std::shared_ptr<float> value;
@@ -133,6 +169,10 @@ struct FunExpression : Expression
 	auto eval() -> float override;
 	auto print() -> std::string override;
 	
+	auto derive(std::shared_ptr<float> sym) -> std::shared_ptr<Expression> override;
+	
+	auto clone() -> std::shared_ptr<Expression> override;
+	
 	std::string name;
 	std::function<float(float)> f;
 	std::shared_ptr<Expression> left;
@@ -144,6 +184,10 @@ struct ExpExpression : Expression
 {
 	auto eval() -> float override;
 	auto print() -> std::string override;
+	
+	auto derive(std::shared_ptr<float> sym) -> std::shared_ptr<Expression> override;
+	
+	auto clone() -> std::shared_ptr<Expression> override;
 	
 	std::shared_ptr<Expression> left, right;
 
@@ -262,7 +306,6 @@ struct LParToken : Token
 			{"tan", std::tanf},
 			{"ln", std::logf},
 			{"log", std::log10f},
-			{"exp", std::expf},
 			{"exp", std::expf},
 			{"sqrt", std::sqrtf},
 			{"asin", std::asinf},
