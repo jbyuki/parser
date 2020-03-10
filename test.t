@@ -237,6 +237,36 @@ test.assert_eq("d/dx(3*x+2*x) (where x = 2)", dr->eval(), 5.f);
 {
 Parser parser;
 auto x = parser.getSymbol("x");
+*x = 4.f;
+auto r = parser.process("x/4");
+auto dr = r->derive(parser.getSymbol("x"));
+test.assert_eq("d/dx(x/4) (where x = 4)", dr->eval(), 0.25f);
+}
+
+@test_cases+=
+{
+Parser parser;
+auto x = parser.getSymbol("x");
+*x = 2.f;
+auto r = parser.process("1/x");
+auto dr = r->derive(parser.getSymbol("x"));
+test.assert_eq("d/dx(1/x) (where x = 2)", dr->eval(), -0.25f);
+}
+
+@test_cases+=
+{
+Parser parser;
+auto x = parser.getSymbol("x");
+*x = 2.f;
+auto r = parser.process("(x+2)/x");
+auto dr = r->derive(parser.getSymbol("x"));
+test.assert_eq("d/dx((x+2)/x) (where x = 2)", dr->eval(), -0.5f);
+}
+
+@test_cases+=
+{
+Parser parser;
+auto x = parser.getSymbol("x");
 *x = 2.f;
 auto r = parser.process("x^3+x");
 auto dr = r->derive(parser.getSymbol("x"));
