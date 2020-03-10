@@ -320,11 +320,14 @@ auto main() -> int
 	auto dr = r->derive(parser.getSymbol("x"));
 	test.assert_eq("d/dx(x*y) (where x = 2, y = 4)", dr->eval(), 4.f);
 	}
+	
 	test.showResults();
 	
+	if(test.num_failed > 0) {
+		return EXIT_FAILURE;
+	}
 	
-
-	system("PAUSE");
+	
 	return 0;
 }
 

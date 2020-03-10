@@ -6,8 +6,7 @@ auto main() -> int
 	@init_tester
 	@test_cases
 	@print_tester_results
-
-	system("PAUSE");
+	@return_failure_if_failed_tests
 	return 0;
 }
 
@@ -19,6 +18,11 @@ Test test;
 
 @print_tester_results=
 test.showResults();
+
+@return_failure_if_failed_tests=
+if(test.num_failed > 0) {
+	return EXIT_FAILURE;
+}
 
 
 @includes+=
@@ -377,3 +381,4 @@ auto y = parser.getSymbol("y");
 auto dr = r->derive(parser.getSymbol("x"));
 test.assert_eq("d/dx(x*y) (where x = 2, y = 4)", dr->eval(), 4.f);
 }
+
