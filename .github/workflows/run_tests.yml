@@ -2,7 +2,7 @@ name: Run Tests
 on: push
 
 jobs:
-    build:
+    build-ubuntu:
         name: Build and test
         runs-on: ubuntu-latest
         steps:
@@ -18,5 +18,22 @@ jobs:
         - name: test
           run: |
               cd build
-              ls
               ./parser
+    build-ubuntu:
+        name: Build and test
+        runs-on: windows-latest
+        steps:
+        - name: clone repository
+          uses: actions/checkout@v2
+        - name: configure
+          run: |
+              mkdir build
+              cd build
+              cmake ..
+        - name: build
+          run: cmake --build build --config Debug
+        - name: test
+          run: |
+              cd build
+              dir
+              parser.exe
