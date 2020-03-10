@@ -104,11 +104,14 @@ bool pass = result != expected;
 template<typename T>
 static auto assert_null(const std::string& name, const T& result);
 
+@includes+=
+#include <memory>
+
 @define_template_methods+=
 template<typename T>
 auto Test::assert_null(const std::string& name, const T& result)
 {
-	std::shared_ptr<int> expected = nullptr; // type not relevant
+	std::shared_ptr<void> expected = nullptr;
 	@show_test_header_pointer
 	@test_null
 	@show_results_and_update_counters
