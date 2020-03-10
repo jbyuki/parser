@@ -8,6 +8,7 @@ Features include:
 * parenthesis
 * variables
 * common math functions (cos, sin, tan, sqrt, ...)
+* constants (pi)
 * exponents
 * symbolic derivation
 
