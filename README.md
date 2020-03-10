@@ -22,4 +22,4 @@ Include **parser.cpp** and **parser.h** in your project. No external dependencie
 Documentation
 -------------
 
-See **test.cpp**
+See [test.cpp](https://github.com/jbyuki/parser/blob/master/test.cpp)
