@@ -149,7 +149,7 @@ auto FunExpression::eval() -> float { return f(left->eval()); }
 auto FunExpression::print() -> std::string { return "([" + name + "] " + left->print() + ")"; }
 
 
-auto ExpExpression::eval() -> float { return std::powf(left->eval(), right->eval()); }
+auto ExpExpression::eval() -> float { return std::pow(left->eval(), right->eval()); }
 auto ExpExpression::print() -> std::string { return "(^ " + left->print() + " " + right->print() + ")"; }
 
 auto Parser::clear() -> void

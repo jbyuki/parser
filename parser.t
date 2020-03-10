@@ -586,7 +586,7 @@ auto infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expre
 auto priority() -> int override { return 70; }
 
 @define_methods+=
-auto ExpExpression::eval() -> float { return std::powf(left->eval(), right->eval()); }
+auto ExpExpression::eval() -> float { return std::pow(left->eval(), right->eval()); }
 auto ExpExpression::print() -> std::string { return "(^ " + left->print() + " " + right->print() + ")"; }
 
 @methods+=
