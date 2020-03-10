@@ -19,7 +19,7 @@ jobs:
           run: |
               cd build
               ./parser
-    build-ubuntu:
+    build-windows:
         name: Build and test
         runs-on: windows-latest
         steps:
