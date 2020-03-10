@@ -18,4 +18,5 @@ jobs:
         - name: test
           run: |
               cd build
-              parser
+              ls
+              ./parser
