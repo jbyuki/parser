@@ -36,5 +36,4 @@ jobs:
           run: |
               cd build
               cd Debug
-              dir
-              parser.exe
+              .\parser.exe
