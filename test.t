@@ -347,7 +347,7 @@ auto x = parser.getSymbol("x");
 *x = 2.f;
 auto r = parser.process("sin(x^3)");
 auto dr = r->derive(parser.getSymbol("x"));
-test.assert_eq("d/dx(sin(x^2)) (where x = 2)", dr->eval(), std::cosf(8.f)*12.f);
+test.assert_eq("d/dx(sin(x^2)) (where x = 2)", dr->eval(), std::cos(8.f)*12.f);
 }
 
 @test_cases+=
