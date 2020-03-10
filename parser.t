@@ -544,16 +544,16 @@ auto FunExpression::print() -> std::string { return "([" + name + "] " + left->p
 
 
 @list_supported_functions=
-{"sin", std::sinf},
-{"cos", std::cosf},
-{"tan", std::tanf},
-{"ln", std::logf},
-{"log", std::log10f},
-{"exp", std::expf},
-{"sqrt", std::sqrtf},
-{"asin", std::asinf},
-{"acos", std::acosf},
-{"atan", std::atanf},
+{"sin", [](float x) { return std::sin(x); }},
+{"cos", [](float x) { return std::cos(x); }},
+{"tan", [](float x) { return std::tan(x); }},
+{"ln", [](float x) { return std::log(x); }},
+{"log", [](float x) { return std::log10(x); }},
+{"exp", [](float x) { return std::exp(x); }},
+{"sqrt", [](float x) { return std::sqrt(x); }},
+{"asin", [](float x) { return std::asin(x); }},
+{"acos", [](float x) { return std::acos(x); }},
+{"atan", [](float x) { return std::atan(x); }},
 
 @token_struct+=
 struct ExpToken : Token
@@ -778,14 +778,14 @@ if(dl->isZero()) {
 @derive_functions=
 if(name == "cos") {
 	// -sin(u)*u'
-	auto l = std::make_shared<FunExpression>("sin", std::sinf, left->clone());
+	auto l = std::make_shared<FunExpression>("sin", [](float x) { return std::sin(x); }, left->clone());
 	@composition_rule
 	return std::make_shared<PrefixSubExpression>(p);
 }
 
 else if(name == "sin") {
 	// cos(u)*u'
-	auto l = std::make_shared<FunExpression>("cos", std::cosf, left->clone());
+	auto l = std::make_shared<FunExpression>("cos", [](float x) { return std::cos(x); }, left->clone());
 	@composition_rule
 	return p;
 }

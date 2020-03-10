@@ -282,7 +282,7 @@ auto FunExpression::derive(std::shared_ptr<float> sym) -> std::shared_ptr<Expres
 { 
 	if(name == "cos") {
 		// -sin(u)*u'
-		auto l = std::make_shared<FunExpression>("sin", std::sinf, left->clone());
+		auto l = std::make_shared<FunExpression>("sin", [](float x) { return std::sin(x); }, left->clone());
 		auto dl = left->derive(sym);
 		std::shared_ptr<Expression> p = std::make_shared<MulExpression>(l, dl);
 		if(dl->isZero()) {
@@ -296,7 +296,7 @@ auto FunExpression::derive(std::shared_ptr<float> sym) -> std::shared_ptr<Expres
 	
 	else if(name == "sin") {
 		// cos(u)*u'
-		auto l = std::make_shared<FunExpression>("cos", std::cosf, left->clone());
+		auto l = std::make_shared<FunExpression>("cos", [](float x) { return std::cos(x); }, left->clone());
 		auto dl = left->derive(sym);
 		std::shared_ptr<Expression> p = std::make_shared<MulExpression>(l, dl);
 		if(dl->isZero()) {

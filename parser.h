@@ -301,16 +301,16 @@ struct LParToken : Token
 	auto infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expression> override
 	{
 		static std::unordered_map<std::string, std::function<float(float)>> funs = {
-			{"sin", std::sinf},
-			{"cos", std::cosf},
-			{"tan", std::tanf},
-			{"ln", std::logf},
-			{"log", std::log10f},
-			{"exp", std::expf},
-			{"sqrt", std::sqrtf},
-			{"asin", std::asinf},
-			{"acos", std::acosf},
-			{"atan", std::atanf},
+			{"sin", [](float x) { return std::sin(x); }},
+			{"cos", [](float x) { return std::cos(x); }},
+			{"tan", [](float x) { return std::tan(x); }},
+			{"ln", [](float x) { return std::log(x); }},
+			{"log", [](float x) { return std::log10(x); }},
+			{"exp", [](float x) { return std::exp(x); }},
+			{"sqrt", [](float x) { return std::sqrt(x); }},
+			{"asin", [](float x) { return std::asin(x); }},
+			{"acos", [](float x) { return std::acos(x); }},
+			{"atan", [](float x) { return std::atan(x); }},
 			
 		};
 	
