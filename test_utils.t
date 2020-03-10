@@ -108,7 +108,7 @@ static auto assert_null(const std::string& name, const T& result);
 template<typename T>
 auto Test::assert_null(const std::string& name, const T& result)
 {
-	std::shared_ptr<void> expected = nullptr;
+	std::shared_ptr<int> expected = nullptr; // type not relevant
 	@show_test_header_pointer
 	@test_null
 	@show_results_and_update_counters

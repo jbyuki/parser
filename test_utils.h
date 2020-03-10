@@ -71,7 +71,7 @@ auto Test::assert_neq(const std::string& name, const T& result, const T& expecte
 template<typename T>
 auto Test::assert_null(const std::string& name, const T& result)
 {
-	std::shared_ptr<void> expected = nullptr;
+	std::shared_ptr<int> expected = nullptr; // type not relevant
 	std::cout << "TEST: " << name << std::endl;
 	std::cout << "RESULT: " << result.get() << std::endl;
 	std::cout << "EXPECTED: " << expected.get() << std::endl;
