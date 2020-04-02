@@ -7,6 +7,8 @@
 #include <sstream>
 
 
+#include <complex>
+
 #include <cctype>
 
 #include <unordered_map>
@@ -24,10 +26,10 @@ struct Parser;
 
 struct Expression
 {
-	virtual auto eval() -> float = 0;
+	virtual auto eval() -> std::complex<float> = 0;
 	virtual auto print() -> std::string = 0;
 	
-	virtual auto derive(std::shared_ptr<float> sym) -> std::shared_ptr<Expression> = 0;
+	virtual auto derive(std::shared_ptr<std::complex<float>> sym) -> std::shared_ptr<Expression> = 0;
 	
 	virtual auto clone() -> std::shared_ptr<Expression> = 0;
 	
@@ -57,7 +59,7 @@ struct Parser
 	
 	auto parse(int p=0) -> std::shared_ptr<Expression>;
 	
-	auto getSymbol(const std::string& name) -> std::shared_ptr<float>;
+	auto getSymbol(const std::string& name) -> std::shared_ptr<std::complex<float>>;
 	
 	auto removeSymbol(const std::string& name) -> void;
 	
@@ -66,16 +68,16 @@ struct Parser
 	std::vector<std::shared_ptr<Token>> tokens;
 	int i=0; // current token
 	
-	std::map<std::string, std::shared_ptr<float>> symbol_table;
+	std::map<std::string, std::shared_ptr<std::complex<float>>> symbol_table;
 	
 };
 
 struct AddExpression : Expression
 {
-	auto eval() -> float override;
+	auto eval() -> std::complex<float> override;
 	auto print() -> std::string override;
 	
-	auto derive(std::shared_ptr<float> sym) -> std::shared_ptr<Expression> override;
+	auto derive(std::shared_ptr<std::complex<float>> sym) -> std::shared_ptr<Expression> override;
 	
 	auto clone() -> std::shared_ptr<Expression> override;
 	
@@ -86,10 +88,10 @@ struct AddExpression : Expression
 
 struct PrefixSubExpression : Expression
 {
-	auto eval() -> float override;
+	auto eval() -> std::complex<float> override;
 	auto print() -> std::string override;
 	
-	auto derive(std::shared_ptr<float> sym) -> std::shared_ptr<Expression> override;
+	auto derive(std::shared_ptr<std::complex<float>> sym) -> std::shared_ptr<Expression> override;
 	
 	auto clone() -> std::shared_ptr<Expression> override;
 	
@@ -99,10 +101,10 @@ struct PrefixSubExpression : Expression
 
 struct SubExpression : Expression
 {
-	auto eval() -> float override;
+	auto eval() -> std::complex<float> override;
 	auto print() -> std::string override;
 	
-	auto derive(std::shared_ptr<float> sym) -> std::shared_ptr<Expression> override;
+	auto derive(std::shared_ptr<std::complex<float>> sym) -> std::shared_ptr<Expression> override;
 	
 	auto clone() -> std::shared_ptr<Expression> override;
 	
@@ -112,10 +114,10 @@ struct SubExpression : Expression
 
 struct MulExpression : Expression
 {
-	auto eval() -> float override;
+	auto eval() -> std::complex<float> override;
 	auto print() -> std::string override;
 	
-	auto derive(std::shared_ptr<float> sym) -> std::shared_ptr<Expression> override;
+	auto derive(std::shared_ptr<std::complex<float>> sym) -> std::shared_ptr<Expression> override;
 	
 	auto clone() -> std::shared_ptr<Expression> override;
 	
@@ -125,10 +127,10 @@ struct MulExpression : Expression
 
 struct DivExpression : Expression
 {
-	auto eval() -> float override;
+	auto eval() -> std::complex<float> override;
 	auto print() -> std::string override;
 	
-	auto derive(std::shared_ptr<float> sym) -> std::shared_ptr<Expression> override;
+	auto derive(std::shared_ptr<std::complex<float>> sym) -> std::shared_ptr<Expression> override;
 	
 	auto clone() -> std::shared_ptr<Expression> override;
 	
@@ -138,54 +140,54 @@ struct DivExpression : Expression
 
 struct NumExpression : Expression
 {
-	auto eval() -> float override;
+	auto eval() -> std::complex<float> override;
 	auto print() -> std::string override;
 	
-	auto derive(std::shared_ptr<float> sym) -> std::shared_ptr<Expression> override;
+	auto derive(std::shared_ptr<std::complex<float>> sym) -> std::shared_ptr<Expression> override;
 	
 	auto clone() -> std::shared_ptr<Expression> override;
 	
-	float num;
-	NumExpression(float num) : num(num) {}
+	std::complex<float> num;
+	NumExpression(std::complex<float> num) : num(num) {}
 };
 
 struct SymExpression : Expression
 {
-	auto eval() -> float override;
+	auto eval() -> std::complex<float> override;
 	auto print() -> std::string override;
 	
-	auto derive(std::shared_ptr<float> sym) -> std::shared_ptr<Expression> override;
+	auto derive(std::shared_ptr<std::complex<float>> sym) -> std::shared_ptr<Expression> override;
 	
 	auto clone() -> std::shared_ptr<Expression> override;
 	
 	std::string name;
-	std::shared_ptr<float> value;
-	SymExpression(const std::string& name, std::shared_ptr<float> value) : name(name), value(value) {}
+	std::shared_ptr<std::complex<float>> value;
+	SymExpression(const std::string& name, std::shared_ptr<std::complex<float>> value) : name(name), value(value) {}
 };
 
 // function calls
 struct FunExpression : Expression
 {
-	auto eval() -> float override;
+	auto eval() -> std::complex<float> override;
 	auto print() -> std::string override;
 	
-	auto derive(std::shared_ptr<float> sym) -> std::shared_ptr<Expression> override;
+	auto derive(std::shared_ptr<std::complex<float>> sym) -> std::shared_ptr<Expression> override;
 	
 	auto clone() -> std::shared_ptr<Expression> override;
 	
 	std::string name;
-	std::function<float(float)> f;
+	std::function<std::complex<float>(std::complex<float>)> f;
 	std::shared_ptr<Expression> left;
-	FunExpression(const std::string& name, std::function<float(float)> f, std::shared_ptr<Expression> left) : name(name), f(f), left(left) {}
+	FunExpression(const std::string& name, std::function<std::complex<float>(std::complex<float>)> f, std::shared_ptr<Expression> left) : name(name), f(f), left(left) {}
 };
 
 
 struct ExpExpression : Expression
 {
-	auto eval() -> float override;
+	auto eval() -> std::complex<float> override;
 	auto print() -> std::string override;
 	
-	auto derive(std::shared_ptr<float> sym) -> std::shared_ptr<Expression> override;
+	auto derive(std::shared_ptr<std::complex<float>> sym) -> std::shared_ptr<Expression> override;
 	
 	auto clone() -> std::shared_ptr<Expression> override;
 	
@@ -300,17 +302,19 @@ struct LParToken : Token
 	
 	auto infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expression> override
 	{
-		static std::unordered_map<std::string, std::function<float(float)>> funs = {
-			{"sin", [](float x) { return std::sin(x); }},
-			{"cos", [](float x) { return std::cos(x); }},
-			{"tan", [](float x) { return std::tan(x); }},
-			{"ln", [](float x) { return std::log(x); }},
-			{"log", [](float x) { return std::log10(x); }},
-			{"exp", [](float x) { return std::exp(x); }},
-			{"sqrt", [](float x) { return std::sqrt(x); }},
-			{"asin", [](float x) { return std::asin(x); }},
-			{"acos", [](float x) { return std::acos(x); }},
-			{"atan", [](float x) { return std::atan(x); }},
+		static std::unordered_map<std::string, std::function<std::complex<float>(std::complex<float>)>> funs = {
+			{"sin", [](std::complex<float> x) { return std::sin(x); }},
+			{"cos", [](std::complex<float> x) { return std::cos(x); }},
+			{"tan", [](std::complex<float> x) { return std::tan(x); }},
+			{"ln", [](std::complex<float> x) { return std::log(x); }},
+			{"log", [](std::complex<float> x) { return std::log10(x); }},
+			{"exp", [](std::complex<float> x) { return std::exp(x); }},
+			{"sqrt", [](std::complex<float> x) { return std::sqrt(x); }},
+			{"asin", [](std::complex<float> x) { return std::asin(x); }},
+			{"acos", [](std::complex<float> x) { return std::acos(x); }},
+			{"atan", [](std::complex<float> x) { return std::atan(x); }},
+			{"abs", [](std::complex<float> x) { return std::abs(x); }},
+			{"arg", [](std::complex<float> x) { return std::arg(x); }},
 			
 		};
 	
@@ -341,9 +345,9 @@ struct NumToken : Token
 		return std::make_shared<NumExpression>(num);
 	}
 	
-	float num;
+	std::complex<float> num;
 
-	NumToken(float num) : num(num) {}
+	NumToken(std::complex<float> num) : num(num) {}
 };
 
 struct SymToken : Token

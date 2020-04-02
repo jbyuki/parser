@@ -19,12 +19,12 @@ struct Test
 #include <string>
 
 @methods=
-template<typename T>
-static auto assert_eq(const std::string& name, const T& result, const T& expected);
+template<typename T, typename U>
+static auto assert_eq(const std::string& name, const T& result, const U& expected);
 
 @define_template_methods=
-template<typename T>
-auto Test::assert_eq(const std::string& name, const T& result, const T& expected)
+template<typename T, typename U>
+auto Test::assert_eq(const std::string& name, const T& result, const U& expected)
 {
 	@show_test_header
 	@test_eq
@@ -84,12 +84,12 @@ auto Test::showResults() -> void
 }
 
 @methods+=
-template<typename T>
-static auto assert_neq(const std::string& name, const T& result, const T& expected);
+template<typename T, typename U>
+static auto assert_neq(const std::string& name, const T& result, const U& expected);
 
 @define_template_methods+=
-template<typename T>
-auto Test::assert_neq(const std::string& name, const T& result, const T& expected)
+template<typename T, typename U>
+auto Test::assert_neq(const std::string& name, const T& result, const U& expected)
 {
 	@show_test_header
 	@test_neq

@@ -131,13 +131,16 @@ struct LParToken : Token
 else if(c == '(') { iss >> c; tokens.emplace_back(new LParToken()); }
 else if(c == ')') { iss >> c; tokens.emplace_back(new RParToken()); }
 
+@includes+=
+#include <complex>
+
 @token_struct+=
 struct NumToken : Token
 {
 	@num_token_methods
-	float num;
+	std::complex<float> num;
 
-	NumToken(float num) : num(num) {}
+	NumToken(std::complex<float> num) : num(num) {}
 };
 
 @tokenize_num=
@@ -182,7 +185,7 @@ do {
 #include <unordered_map>
 
 @create_num_token_if_constant=
-static std::unordered_map<std::string, float> constants = {
+static std::unordered_map<std::string, std::complex<float>> constants = {
 	@list_constants
 };
 
@@ -197,6 +200,7 @@ if(constants.find(sym) != constants.end()) {
 // atan(1)*4 = pi
 {"pi", 4.f*atanf(1.f)},
 {"mu0", 4*(4.f*atanf(1.f))*1e-7f},
+{"i", std::complex<float>(0.f, 1.f)},
 
 @otherwise_crete_sym_token=
 else {
@@ -411,8 +415,8 @@ auto priority() -> int override { return 10; }
 struct NumExpression : Expression
 {
 	@expression_virtual_methods
-	float num;
-	NumExpression(float num) : num(num) {}
+	std::complex<float> num;
+	NumExpression(std::complex<float> num) : num(num) {}
 };
 
 @num_token_methods=
@@ -425,13 +429,13 @@ auto prefix(Parser*) -> std::shared_ptr<Expression> override
 #include <map>
 
 @member_variables+=
-std::map<std::string, std::shared_ptr<float>> symbol_table;
+std::map<std::string, std::shared_ptr<std::complex<float>>> symbol_table;
 
 @methods+=
-auto getSymbol(const std::string& name) -> std::shared_ptr<float>;
+auto getSymbol(const std::string& name) -> std::shared_ptr<std::complex<float>>;
 
 @define_methods+=
-auto Parser::getSymbol(const std::string& name) -> std::shared_ptr<float>
+auto Parser::getSymbol(const std::string& name) -> std::shared_ptr<std::complex<float>>
 {
 	@return_if_existing
 	@create_for_new
@@ -443,7 +447,7 @@ if(symbol_table.find(name) != symbol_table.end()) {
 }
 
 @create_for_new=
-symbol_table[name] = std::make_shared<float>(0.f);
+symbol_table[name] = std::make_shared<std::complex<float>>(0.f);
 return symbol_table[name];
 
 @expression_structs+=
@@ -451,8 +455,8 @@ struct SymExpression : Expression
 {
 	@expression_virtual_methods
 	std::string name;
-	std::shared_ptr<float> value;
-	SymExpression(const std::string& name, std::shared_ptr<float> value) : name(name), value(value) {}
+	std::shared_ptr<std::complex<float>> value;
+	SymExpression(const std::string& name, std::shared_ptr<std::complex<float>> value) : name(name), value(value) {}
 };
 
 @sym_token_methods=
@@ -470,9 +474,9 @@ struct FunExpression : Expression
 {
 	@expression_virtual_methods
 	std::string name;
-	std::function<float(float)> f;
+	std::function<std::complex<float>(std::complex<float>)> f;
 	std::shared_ptr<Expression> left;
-	FunExpression(const std::string& name, std::function<float(float)> f, std::shared_ptr<Expression> left) : name(name), f(f), left(left) {}
+	FunExpression(const std::string& name, std::function<std::complex<float>(std::complex<float>)> f, std::shared_ptr<Expression> left) : name(name), f(f), left(left) {}
 };
 
 
@@ -491,7 +495,7 @@ symbol_table.erase(name);
 @lpar_token_methods+=
 auto infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expression> override
 {
-	static std::unordered_map<std::string, std::function<float(float)>> funs = {
+	static std::unordered_map<std::string, std::function<std::complex<float>(std::complex<float>)>> funs = {
 		@list_supported_functions
 	};
 
@@ -508,19 +512,19 @@ auto infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expre
 }
 
 @expression_methods=
-virtual auto eval() -> float = 0;
+virtual auto eval() -> std::complex<float> = 0;
 virtual auto print() -> std::string = 0;
 
 @expression_virtual_methods=
-auto eval() -> float override;
+auto eval() -> std::complex<float> override;
 auto print() -> std::string override;
 
 @define_methods+=
-auto AddExpression::eval() -> float { return left->eval() + right->eval(); }
-auto SubExpression::eval() -> float { return left->eval() - right->eval(); }
-auto MulExpression::eval() -> float { return left->eval() * right->eval(); }
-auto DivExpression::eval() -> float { return left->eval() / right->eval(); }
-auto PrefixSubExpression::eval() -> float { return -left->eval(); }
+auto AddExpression::eval() -> std::complex<float> { return left->eval() + right->eval(); }
+auto SubExpression::eval() -> std::complex<float> { return left->eval() - right->eval(); }
+auto MulExpression::eval() -> std::complex<float> { return left->eval() * right->eval(); }
+auto DivExpression::eval() -> std::complex<float> { return left->eval() / right->eval(); }
+auto PrefixSubExpression::eval() -> std::complex<float> { return -left->eval(); }
 
 @define_methods+=
 auto AddExpression::print() -> std::string { return "(+ " + left->print() + " " + right->print() + ")"; }
@@ -531,29 +535,33 @@ auto PrefixSubExpression::print() -> std::string { return "(-" + left->print() +
 
 
 @define_methods+=
-auto NumExpression::eval() -> float { return num; }
-auto SymExpression::eval() -> float { return (*value); }
+auto NumExpression::eval() -> std::complex<float> { return num; }
+auto SymExpression::eval() -> std::complex<float> { return (*value); }
 
 @define_methods+=
-auto NumExpression::print() -> std::string { return std::to_string(num); }
+auto NumExpression::print() -> std::string { 
+	return std::to_string(std::real(num)) + "+" + std::to_string(std::imag(num)) + "i"; 
+}
 auto SymExpression::print() -> std::string { return "[sym " + name + "]"; }
 
 @define_methods+=
-auto FunExpression::eval() -> float { return f(left->eval()); }
+auto FunExpression::eval() -> std::complex<float> { return f(left->eval()); }
 auto FunExpression::print() -> std::string { return "([" + name + "] " + left->print() + ")"; }
 
 
 @list_supported_functions=
-{"sin", [](float x) { return std::sin(x); }},
-{"cos", [](float x) { return std::cos(x); }},
-{"tan", [](float x) { return std::tan(x); }},
-{"ln", [](float x) { return std::log(x); }},
-{"log", [](float x) { return std::log10(x); }},
-{"exp", [](float x) { return std::exp(x); }},
-{"sqrt", [](float x) { return std::sqrt(x); }},
-{"asin", [](float x) { return std::asin(x); }},
-{"acos", [](float x) { return std::acos(x); }},
-{"atan", [](float x) { return std::atan(x); }},
+{"sin", [](std::complex<float> x) { return std::sin(x); }},
+{"cos", [](std::complex<float> x) { return std::cos(x); }},
+{"tan", [](std::complex<float> x) { return std::tan(x); }},
+{"ln", [](std::complex<float> x) { return std::log(x); }},
+{"log", [](std::complex<float> x) { return std::log10(x); }},
+{"exp", [](std::complex<float> x) { return std::exp(x); }},
+{"sqrt", [](std::complex<float> x) { return std::sqrt(x); }},
+{"asin", [](std::complex<float> x) { return std::asin(x); }},
+{"acos", [](std::complex<float> x) { return std::acos(x); }},
+{"atan", [](std::complex<float> x) { return std::atan(x); }},
+{"abs", [](std::complex<float> x) { return std::abs(x); }},
+{"arg", [](std::complex<float> x) { return std::arg(x); }},
 
 @token_struct+=
 struct ExpToken : Token
@@ -586,7 +594,7 @@ auto infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expre
 auto priority() -> int override { return 70; }
 
 @define_methods+=
-auto ExpExpression::eval() -> float { return std::pow(left->eval(), right->eval()); }
+auto ExpExpression::eval() -> std::complex<float> { return std::pow(left->eval(), right->eval()); }
 auto ExpExpression::print() -> std::string { return "(^ " + left->print() + " " + right->print() + ")"; }
 
 @methods+=
@@ -602,10 +610,10 @@ auto Parser::clear() -> void
 symbol_table.clear();
 
 @expression_methods+=
-virtual auto derive(std::shared_ptr<float> sym) -> std::shared_ptr<Expression> = 0;
+virtual auto derive(std::shared_ptr<std::complex<float>> sym) -> std::shared_ptr<Expression> = 0;
 
 @expression_virtual_methods+=
-auto derive(std::shared_ptr<float> sym) -> std::shared_ptr<Expression> override;
+auto derive(std::shared_ptr<std::complex<float>> sym) -> std::shared_ptr<Expression> override;
 
 @expression_methods+=
 virtual auto clone() -> std::shared_ptr<Expression> = 0;
@@ -624,7 +632,7 @@ auto Expression::isZero() -> bool
 }
 
 @define_methods+=
-auto AddExpression::derive(std::shared_ptr<float> sym) -> std::shared_ptr<Expression>
+auto AddExpression::derive(std::shared_ptr<std::complex<float>> sym) -> std::shared_ptr<Expression>
 { 
 	auto dl = left->derive(sym);
 	auto dr = right->derive(sym);
@@ -641,7 +649,7 @@ auto AddExpression::clone() -> std::shared_ptr<Expression>
 }
 
 @define_methods+=
-auto PrefixSubExpression::derive(std::shared_ptr<float> sym) -> std::shared_ptr<Expression>
+auto PrefixSubExpression::derive(std::shared_ptr<std::complex<float>> sym) -> std::shared_ptr<Expression>
 { 
 	auto dl = left->derive(sym);
 
@@ -656,7 +664,7 @@ auto PrefixSubExpression::clone() -> std::shared_ptr<Expression>
 }
 
 @define_methods+=
-auto SubExpression::derive(std::shared_ptr<float> sym) -> std::shared_ptr<Expression>
+auto SubExpression::derive(std::shared_ptr<std::complex<float>> sym) -> std::shared_ptr<Expression>
 { 
 	auto dl = left->derive(sym);
 	auto dr = right->derive(sym);
@@ -673,7 +681,7 @@ auto SubExpression::clone() -> std::shared_ptr<Expression>
 }
 
 @define_methods+=
-auto MulExpression::derive(std::shared_ptr<float> sym) -> std::shared_ptr<Expression>
+auto MulExpression::derive(std::shared_ptr<std::complex<float>> sym) -> std::shared_ptr<Expression>
 { 
 	// u'v + uv'
 	auto dl = left->derive(sym);
@@ -694,7 +702,7 @@ auto MulExpression::clone() -> std::shared_ptr<Expression>
 }
 
 @define_methods+=
-auto DivExpression::derive(std::shared_ptr<float> sym) -> std::shared_ptr<Expression>
+auto DivExpression::derive(std::shared_ptr<std::complex<float>> sym) -> std::shared_ptr<Expression>
 { 
 	// (u'v - uv')/v^2
 	auto dl = left->derive(sym);
@@ -723,7 +731,7 @@ auto DivExpression::clone() -> std::shared_ptr<Expression>
 }
 
 @define_methods+=
-auto NumExpression::derive(std::shared_ptr<float> sym) -> std::shared_ptr<Expression>
+auto NumExpression::derive(std::shared_ptr<std::complex<float>> sym) -> std::shared_ptr<Expression>
 { 
 	return std::make_shared<NumExpression>(0.f);
 }
@@ -734,7 +742,7 @@ auto NumExpression::clone() -> std::shared_ptr<Expression>
 }
 
 @define_methods+=
-auto SymExpression::derive(std::shared_ptr<float> sym) -> std::shared_ptr<Expression>
+auto SymExpression::derive(std::shared_ptr<std::complex<float>> sym) -> std::shared_ptr<Expression>
 { 
 	return std::make_shared<NumExpression>(value == sym ? 1.f : 0.f);
 }
@@ -745,7 +753,7 @@ auto SymExpression::clone() -> std::shared_ptr<Expression>
 }
 
 @define_methods+=
-auto FunExpression::derive(std::shared_ptr<float> sym) -> std::shared_ptr<Expression>
+auto FunExpression::derive(std::shared_ptr<std::complex<float>> sym) -> std::shared_ptr<Expression>
 { 
 	@derive_functions
 	return nullptr;
@@ -778,14 +786,14 @@ if(dl->isZero()) {
 @derive_functions=
 if(name == "cos") {
 	// -sin(u)*u'
-	auto l = std::make_shared<FunExpression>("sin", [](float x) { return std::sin(x); }, left->clone());
+	auto l = std::make_shared<FunExpression>("sin", [](std::complex<float> x) { return std::sin(x); }, left->clone());
 	@composition_rule
 	return std::make_shared<PrefixSubExpression>(p);
 }
 
 else if(name == "sin") {
 	// cos(u)*u'
-	auto l = std::make_shared<FunExpression>("cos", [](float x) { return std::cos(x); }, left->clone());
+	auto l = std::make_shared<FunExpression>("cos", [](std::complex<float> x) { return std::cos(x); }, left->clone());
 	@composition_rule
 	return p;
 }
@@ -804,7 +812,7 @@ else if(name == "sqrt") {
 }
 
 @define_methods+=
-auto ExpExpression::derive(std::shared_ptr<float> sym) -> std::shared_ptr<Expression>
+auto ExpExpression::derive(std::shared_ptr<std::complex<float>> sym) -> std::shared_ptr<Expression>
 { 
 	@derive_exp
 	return nullptr;
@@ -819,7 +827,7 @@ auto ExpExpression::clone() -> std::shared_ptr<Expression>
 // for now just support constant exponents (for simplicity)
 auto nr = std::dynamic_pointer_cast<NumExpression>(right);
 if(nr) {
-	float exp = nr->num;
+	std::complex<float> exp = nr->num;
 	if(exp == 1.f) {
 		return left->derive(sym);
 	}

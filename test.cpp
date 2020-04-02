@@ -43,7 +43,7 @@ auto main() -> int
 	{
 	Parser parser;
 	auto r = parser.process("3/(2+1)");
-	test.assert_eq("2*(2-1)", r->eval(), 1.f);
+	test.assert_eq("3/(2+1)", r->eval(), 1.f);
 	}
 	
 	{
@@ -67,7 +67,7 @@ auto main() -> int
 	{
 	Parser parser;
 	auto r = parser.process("cos(0)*sin(0)");
-	test.assert_eq("cos(0)", r->eval(), 0.f);
+	test.assert_eq("cos(0)*sin(0)", r->eval(), 0.f);
 	}
 	
 	{
@@ -235,7 +235,7 @@ auto main() -> int
 	*x = 2.f;
 	auto r = parser.process("x^3+1");
 	auto dr = r->derive(parser.getSymbol("x"));
-	test.assert_eq("d/dx(x^3+x) (where x = 2)", dr->eval(), 12.f);
+	test.assert_eq("d/dx(x^3+1) (where x = 2)", dr->eval(), 12.f);
 	}
 	
 	{
@@ -289,7 +289,7 @@ auto main() -> int
 	*x = 2.f;
 	auto r = parser.process("sin(x^3)");
 	auto dr = r->derive(parser.getSymbol("x"));
-	test.assert_eq("d/dx(sin(x^2)) (where x = 2)", dr->eval(), std::cos(8.f)*12.f);
+	test.assert_eq("d/dx(sin(x^3)) (where x = 2)", dr->eval(), std::cos(8.f)*12.f);
 	}
 	
 	{
@@ -307,7 +307,7 @@ auto main() -> int
 	*x = 2.f;
 	auto r = parser.process("sqrt(2*x)");
 	auto dr = r->derive(parser.getSymbol("x"));
-	test.assert_eq("d/dx(sqrt(x)) (where x = 2)", dr->eval(), 0.5f);
+	test.assert_eq("d/dx(sqrt(2*x)) (where x = 2)", dr->eval(), 0.5f);
 	}
 	
 	{
@@ -321,6 +321,48 @@ auto main() -> int
 	test.assert_eq("d/dx(x*y) (where x = 2, y = 4)", dr->eval(), 4.f);
 	}
 	
+	{
+	Parser parser;
+	auto r = parser.process("i");
+	test.assert_eq("i", r->eval(), std::complex<float>(0.f, 1.f));
+	}
+	
+	{
+	Parser parser;
+	auto r = parser.process("1+i");
+	test.assert_eq("1+i", r->eval(), std::complex<float>(1.f, 1.f));
+	}
+	
+	{
+	Parser parser;
+	auto r = parser.process("-i");
+	test.assert_eq("-i", r->eval(), std::complex<float>(0.f, -1.f));
+	}
+	
+	{
+	Parser parser;
+	auto r = parser.process("i*i");
+	test.assert_eq("i*i", r->eval(), -1.f);
+	}
+	
+	{
+	Parser parser;
+	auto r = parser.process("2+3*i");
+	test.assert_eq("2+3*i", r->eval(), std::complex<float>(2.f, 3.f));
+	}
+	
+	{
+	Parser parser;
+	auto r = parser.process("(2+3*i)*(2+3*i)");
+	test.assert_eq("(2+3*i)*(2+3*i)", r->eval(), std::complex<float>(-5.f, 12.f));
+	}
+	
+	
+	{
+	Parser parser;
+	auto r = parser.process("abs(3+4*i)");
+	test.assert_eq("abs(3+4*i)", r->eval(), 5.f);
+	}
 	test.showResults();
 	
 

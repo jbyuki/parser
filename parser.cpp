@@ -36,10 +36,11 @@ auto Parser::process(const std::string& input) -> std::shared_ptr<Expression>
 				sym += c;
 			} while(std::isalnum(iss.peek()));
 			
-			static std::unordered_map<std::string, float> constants = {
+			static std::unordered_map<std::string, std::complex<float>> constants = {
 				// atan(1)*4 = pi
 				{"pi", 4.f*atanf(1.f)},
 				{"mu0", 4*(4.f*atanf(1.f))*1e-7f},
+				{"i", std::complex<float>(0.f, 1.f)},
 				
 			};
 			
@@ -109,13 +110,13 @@ auto Parser::parse(int p) -> std::shared_ptr<Expression>
 
 
 
-auto Parser::getSymbol(const std::string& name) -> std::shared_ptr<float>
+auto Parser::getSymbol(const std::string& name) -> std::shared_ptr<std::complex<float>>
 {
 	if(symbol_table.find(name) != symbol_table.end()) {
 		return symbol_table[name];
 	}
 	
-	symbol_table[name] = std::make_shared<float>(0.f);
+	symbol_table[name] = std::make_shared<std::complex<float>>(0.f);
 	return symbol_table[name];
 	
 }
@@ -126,11 +127,11 @@ auto Parser::removeSymbol(const std::string& name) -> void
 	
 }
 
-auto AddExpression::eval() -> float { return left->eval() + right->eval(); }
-auto SubExpression::eval() -> float { return left->eval() - right->eval(); }
-auto MulExpression::eval() -> float { return left->eval() * right->eval(); }
-auto DivExpression::eval() -> float { return left->eval() / right->eval(); }
-auto PrefixSubExpression::eval() -> float { return -left->eval(); }
+auto AddExpression::eval() -> std::complex<float> { return left->eval() + right->eval(); }
+auto SubExpression::eval() -> std::complex<float> { return left->eval() - right->eval(); }
+auto MulExpression::eval() -> std::complex<float> { return left->eval() * right->eval(); }
+auto DivExpression::eval() -> std::complex<float> { return left->eval() / right->eval(); }
+auto PrefixSubExpression::eval() -> std::complex<float> { return -left->eval(); }
 
 auto AddExpression::print() -> std::string { return "(+ " + left->print() + " " + right->print() + ")"; }
 auto SubExpression::print() -> std::string { return "(- " + left->print() + " " + right->print() + ")"; }
@@ -139,17 +140,19 @@ auto DivExpression::print() -> std::string { return "(/ " + left->print() + " " 
 auto PrefixSubExpression::print() -> std::string { return "(-" + left->print() + ")";  }
 
 
-auto NumExpression::eval() -> float { return num; }
-auto SymExpression::eval() -> float { return (*value); }
+auto NumExpression::eval() -> std::complex<float> { return num; }
+auto SymExpression::eval() -> std::complex<float> { return (*value); }
 
-auto NumExpression::print() -> std::string { return std::to_string(num); }
+auto NumExpression::print() -> std::string { 
+	return std::to_string(std::real(num)) + "+" + std::to_string(std::imag(num)) + "i"; 
+}
 auto SymExpression::print() -> std::string { return "[sym " + name + "]"; }
 
-auto FunExpression::eval() -> float { return f(left->eval()); }
+auto FunExpression::eval() -> std::complex<float> { return f(left->eval()); }
 auto FunExpression::print() -> std::string { return "([" + name + "] " + left->print() + ")"; }
 
 
-auto ExpExpression::eval() -> float { return std::pow(left->eval(), right->eval()); }
+auto ExpExpression::eval() -> std::complex<float> { return std::pow(left->eval(), right->eval()); }
 auto ExpExpression::print() -> std::string { return "(^ " + left->print() + " " + right->print() + ")"; }
 
 auto Parser::clear() -> void
@@ -164,7 +167,7 @@ auto Expression::isZero() -> bool
 	return n && n->num == 0.f;
 }
 
-auto AddExpression::derive(std::shared_ptr<float> sym) -> std::shared_ptr<Expression>
+auto AddExpression::derive(std::shared_ptr<std::complex<float>> sym) -> std::shared_ptr<Expression>
 { 
 	auto dl = left->derive(sym);
 	auto dr = right->derive(sym);
@@ -180,7 +183,7 @@ auto AddExpression::clone() -> std::shared_ptr<Expression>
 	return std::make_shared<AddExpression>(left->clone(), right->clone());
 }
 
-auto PrefixSubExpression::derive(std::shared_ptr<float> sym) -> std::shared_ptr<Expression>
+auto PrefixSubExpression::derive(std::shared_ptr<std::complex<float>> sym) -> std::shared_ptr<Expression>
 { 
 	auto dl = left->derive(sym);
 
@@ -194,7 +197,7 @@ auto PrefixSubExpression::clone() -> std::shared_ptr<Expression>
 	return std::make_shared<PrefixSubExpression>(left->clone());
 }
 
-auto SubExpression::derive(std::shared_ptr<float> sym) -> std::shared_ptr<Expression>
+auto SubExpression::derive(std::shared_ptr<std::complex<float>> sym) -> std::shared_ptr<Expression>
 { 
 	auto dl = left->derive(sym);
 	auto dr = right->derive(sym);
@@ -210,7 +213,7 @@ auto SubExpression::clone() -> std::shared_ptr<Expression>
 	return std::make_shared<SubExpression>(left->clone(), right->clone());
 }
 
-auto MulExpression::derive(std::shared_ptr<float> sym) -> std::shared_ptr<Expression>
+auto MulExpression::derive(std::shared_ptr<std::complex<float>> sym) -> std::shared_ptr<Expression>
 { 
 	// u'v + uv'
 	auto dl = left->derive(sym);
@@ -230,7 +233,7 @@ auto MulExpression::clone() -> std::shared_ptr<Expression>
 	return std::make_shared<MulExpression>(left->clone(), right->clone());
 }
 
-auto DivExpression::derive(std::shared_ptr<float> sym) -> std::shared_ptr<Expression>
+auto DivExpression::derive(std::shared_ptr<std::complex<float>> sym) -> std::shared_ptr<Expression>
 { 
 	// (u'v - uv')/v^2
 	auto dl = left->derive(sym);
@@ -258,7 +261,7 @@ auto DivExpression::clone() -> std::shared_ptr<Expression>
 	return std::make_shared<DivExpression>(left->clone(), right->clone());
 }
 
-auto NumExpression::derive(std::shared_ptr<float> sym) -> std::shared_ptr<Expression>
+auto NumExpression::derive(std::shared_ptr<std::complex<float>> sym) -> std::shared_ptr<Expression>
 { 
 	return std::make_shared<NumExpression>(0.f);
 }
@@ -268,7 +271,7 @@ auto NumExpression::clone() -> std::shared_ptr<Expression>
 	return std::make_shared<NumExpression>(*this);
 }
 
-auto SymExpression::derive(std::shared_ptr<float> sym) -> std::shared_ptr<Expression>
+auto SymExpression::derive(std::shared_ptr<std::complex<float>> sym) -> std::shared_ptr<Expression>
 { 
 	return std::make_shared<NumExpression>(value == sym ? 1.f : 0.f);
 }
@@ -278,11 +281,11 @@ auto SymExpression::clone() -> std::shared_ptr<Expression>
 	return std::make_shared<SymExpression>(*this);
 }
 
-auto FunExpression::derive(std::shared_ptr<float> sym) -> std::shared_ptr<Expression>
+auto FunExpression::derive(std::shared_ptr<std::complex<float>> sym) -> std::shared_ptr<Expression>
 { 
 	if(name == "cos") {
 		// -sin(u)*u'
-		auto l = std::make_shared<FunExpression>("sin", [](float x) { return std::sin(x); }, left->clone());
+		auto l = std::make_shared<FunExpression>("sin", [](std::complex<float> x) { return std::sin(x); }, left->clone());
 		auto dl = left->derive(sym);
 		std::shared_ptr<Expression> p = std::make_shared<MulExpression>(l, dl);
 		if(dl->isZero()) {
@@ -296,7 +299,7 @@ auto FunExpression::derive(std::shared_ptr<float> sym) -> std::shared_ptr<Expres
 	
 	else if(name == "sin") {
 		// cos(u)*u'
-		auto l = std::make_shared<FunExpression>("cos", [](float x) { return std::cos(x); }, left->clone());
+		auto l = std::make_shared<FunExpression>("cos", [](std::complex<float> x) { return std::cos(x); }, left->clone());
 		auto dl = left->derive(sym);
 		std::shared_ptr<Expression> p = std::make_shared<MulExpression>(l, dl);
 		if(dl->isZero()) {
@@ -335,12 +338,12 @@ auto Expression::isOne() -> bool
 	return n && n->num == 1.f;
 }
 
-auto ExpExpression::derive(std::shared_ptr<float> sym) -> std::shared_ptr<Expression>
+auto ExpExpression::derive(std::shared_ptr<std::complex<float>> sym) -> std::shared_ptr<Expression>
 { 
 	// for now just support constant exponents (for simplicity)
 	auto nr = std::dynamic_pointer_cast<NumExpression>(right);
 	if(nr) {
-		float exp = nr->num;
+		std::complex<float> exp = nr->num;
 		if(exp == 1.f) {
 			return left->derive(sym);
 		}

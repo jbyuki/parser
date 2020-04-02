@@ -10,13 +10,13 @@
 
 struct Test
 {
-	template<typename T>
-	static auto assert_eq(const std::string& name, const T& result, const T& expected);
+	template<typename T, typename U>
+	static auto assert_eq(const std::string& name, const T& result, const U& expected);
 	
 	auto showResults() -> void;
 	
-	template<typename T>
-	static auto assert_neq(const std::string& name, const T& result, const T& expected);
+	template<typename T, typename U>
+	static auto assert_neq(const std::string& name, const T& result, const U& expected);
 	
 	template<typename T>
 	static auto assert_null(const std::string& name, const T& result);
@@ -27,8 +27,8 @@ struct Test
 	
 };
 
-template<typename T>
-auto Test::assert_eq(const std::string& name, const T& result, const T& expected)
+template<typename T, typename U>
+auto Test::assert_eq(const std::string& name, const T& result, const U& expected)
 {
 	std::cout << "TEST: " << name << std::endl;
 	std::cout << "RESULT: " << result << std::endl;
@@ -49,8 +49,8 @@ auto Test::assert_eq(const std::string& name, const T& result, const T& expected
 
 }
 
-template<typename T>
-auto Test::assert_neq(const std::string& name, const T& result, const T& expected)
+template<typename T, typename U>
+auto Test::assert_neq(const std::string& name, const T& result, const U& expected)
 {
 	std::cout << "TEST: " << name << std::endl;
 	std::cout << "RESULT: " << result << std::endl;
