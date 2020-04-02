@@ -13,6 +13,7 @@ Features include:
 * constants (pi)
 * exponents
 * symbolic derivation
+* complex numbers
 
 Usage
 -----
