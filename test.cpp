@@ -363,6 +363,24 @@ auto main() -> int
 	auto r = parser.process("abs(3+4*i)");
 	test.assert_eq("abs(3+4*i)", r->eval(), 5.f);
 	}
+	
+	{
+	Parser parser;
+	auto r = parser.process("1e1");
+	test.assert_eq("1e1", r->eval(), 10.f);
+	}
+	
+	{
+	Parser parser;
+	auto r = parser.process("3.1e1");
+	test.assert_eq("3.1e1", r->eval(), 31.f);
+	}
+	
+	{
+	Parser parser;
+	auto r = parser.process("3.1e-1");
+	test.assert_eq("3.1e-1", r->eval(), 0.31f);
+	}
 	test.showResults();
 	
 

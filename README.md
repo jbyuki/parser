@@ -14,6 +14,7 @@ Features include:
 * exponents
 * symbolic derivation
 * complex numbers
+* scientific notation
 
 Usage
 -----

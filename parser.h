@@ -357,6 +357,17 @@ struct SymToken : Token
 		return std::make_shared<SymExpression>(sym, p->getSymbol(sym));
 	}
 	
+	auto infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expression> override
+	{
+		if(sym != "e") {
+			return nullptr;
+		}
+	
+		auto right = p->parse(70); // SHOULD NOT be hardcoded here
+		auto base = std::make_shared<NumExpression>(10.f);
+		auto exp10 = std::make_shared<ExpExpression>(base, right);
+		return std::make_shared<MulExpression>(left, exp10);
+	}
 	std::string sym;
 
 	SymToken(std::string sym) : sym(sym) {}

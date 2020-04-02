@@ -362,6 +362,7 @@ auto ExpExpression::derive(std::shared_ptr<std::complex<float>> sym) -> std::sha
 	
 		return p;
 	}
+	
 	return nullptr;
 }
 
