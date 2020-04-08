@@ -447,3 +447,17 @@ Parser parser;
 auto r = parser.process("3.1e-1");
 test.assert_eq("3.1e-1", r->eval(), 0.31f);
 }
+
+@test_cases+=
+{
+Parser parser;
+auto r = parser.process("3.1e1 + 1");
+test.assert_eq("3.1e1 + 1", r->eval(), 32.f);
+}
+
+@test_cases+=
+{
+Parser parser;
+auto r = parser.process("3.1e1 * 3.1e1");
+test.assert_eq("3.1e1 + 3.1e1", r->eval(), 31.f * 31.f);
+}

@@ -51,10 +51,15 @@ auto Parser::process(const std::string& input) -> std::shared_ptr<Expression>
 @base_token_struct=
 struct Token
 {
-	virtual auto prefix(Parser* parser) -> std::shared_ptr<Expression> { return nullptr; }
-	virtual auto infix(Parser* parser, std::shared_ptr<Expression> left) -> std::shared_ptr<Expression> { return nullptr; }
-	virtual auto priority() -> int { return 0; }
+	virtual auto prefix(Parser* parser) -> std::shared_ptr<Expression>;
+	virtual auto infix(Parser* parser, std::shared_ptr<Expression> left) -> std::shared_ptr<Expression>;
+	virtual auto priority() -> int;
 };
+
+@define_methods+=
+auto Token::prefix(Parser* parser) -> std::shared_ptr<Expression> { return nullptr; }
+auto Token::infix(Parser* parser, std::shared_ptr<Expression> left) -> std::shared_ptr<Expression> { return nullptr; }
+auto Token::priority() -> int { return 0; }
 
 @includes+=
 #include <vector>
@@ -222,7 +227,7 @@ auto next() -> std::shared_ptr<Token>;
 @define_methods+=
 auto Parser::next() -> std::shared_ptr<Token>
 {
-	if(i >= tokens.size()) {
+	if(i >= (int)tokens.size()) {
 		return nullptr;
 	}
 
@@ -244,7 +249,7 @@ auto get() -> std::shared_ptr<Token>;
 @define_methods+=
 auto Parser::get() -> std::shared_ptr<Token>
 {
-	if(i >= tokens.size()) {
+	if(i >= (int)tokens.size()) {
 		return nullptr;
 	}
 
@@ -275,10 +280,11 @@ auto Parser::parse(int p) -> std::shared_ptr<Expression>
 	return exp;
 }
 
-
-
 @add_token_methods=
-auto prefix(Parser* p) -> std::shared_ptr<Expression> override
+auto prefix(Parser* p) -> std::shared_ptr<Expression> override;
+
+@define_methods+=
+auto AddToken::prefix(Parser* p) -> std::shared_ptr<Expression>
 {
 	return p->parse(priority());
 }
@@ -293,7 +299,11 @@ struct AddExpression : Expression
 };
 
 @add_token_methods+=
-auto infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expression> override
+auto infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expression> override;
+auto priority() -> int override;
+
+@define_methods+=
+auto AddToken::infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expression>
 {
 	auto t = p->parse(priority());
 	if(!t) {
@@ -302,7 +312,9 @@ auto infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expre
 
 	return std::make_shared<AddExpression>(left, t);
 }
-auto priority() -> int override { return 50; }
+
+auto AddToken::priority() -> int { return 50; }
+
 
 @expression_structs+=
 struct PrefixSubExpression : Expression
@@ -313,7 +325,10 @@ struct PrefixSubExpression : Expression
 };
 
 @sub_token_methods=
-auto prefix(Parser* p) -> std::shared_ptr<Expression> override
+auto prefix(Parser* p) -> std::shared_ptr<Expression> override;
+
+@define_methods+=
+auto SubToken::prefix(Parser* p) -> std::shared_ptr<Expression>
 {
 	auto t = p->parse(90);
 	if(!t) {
@@ -333,7 +348,11 @@ struct SubExpression : Expression
 };
 
 @sub_token_methods+=
-auto infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expression> override
+auto infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expression> override;
+auto priority() -> int override;
+
+@define_methods+=
+auto SubToken::infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expression>
 {
 	auto t = p->parse(priority()-1);
 	if(!t) {
@@ -341,7 +360,7 @@ auto infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expre
 	}
 	return std::make_shared<SubExpression>(left, t);
 }
-auto priority() -> int override { return 50; }
+auto SubToken::priority() -> int { return 50; }
 
 @expression_structs+=
 struct MulExpression : Expression
@@ -352,7 +371,11 @@ struct MulExpression : Expression
 };
 
 @mul_token_methods=
-auto infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expression> override
+auto infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expression>;
+auto priority() -> int override;
+
+@define_methods+=
+auto MulToken::infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expression>
 {
 	auto t = p->parse(priority());
 	if(!t) {
@@ -362,7 +385,8 @@ auto infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expre
 	return std::make_shared<MulExpression>(left, t);
 }
 
-auto priority() -> int override { return 60; }
+auto MulToken::priority() -> int { return 60; }
+
 
 @expression_structs+=
 struct DivExpression : Expression
@@ -373,7 +397,11 @@ struct DivExpression : Expression
 };
 
 @div_token_methods=
-auto infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expression> override
+auto infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expression> override;
+auto priority() -> int override;
+
+@define_methods+=
+auto DivToken::infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expression>
 {
 
 	auto t = p->parse(priority()-1);
@@ -383,10 +411,14 @@ auto infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expre
 	return std::make_shared<DivExpression>(left, t);
 }
 
-auto priority() -> int override  { return 60; }
+auto DivToken::priority() -> int { return 60; }
+
 
 @lpar_token_methods=
-auto prefix(Parser* p) -> std::shared_ptr<Expression> override
+auto prefix(Parser* p) -> std::shared_ptr<Expression> override;
+
+@define_methods+=
+auto LParToken::prefix(Parser* p) -> std::shared_ptr<Expression>
 {
 	auto exp = p->parse(20);
 	if(!exp) {
@@ -405,11 +437,16 @@ if(!rpar || !std::dynamic_pointer_cast<RParToken>(rpar)) {
 p->next(); // skip rpar
 
 @lpar_token_methods+=
-auto priority() -> int override { return 100; }
+auto priority() -> int override;
 
+@define_methods+=
+auto LParToken::priority() -> int { return 100; }
 
-@rpar_token_methods=
-auto priority() -> int override { return 10; }
+@rpar_token_methods+=
+auto priority() -> int override;
+
+@define_methods+=
+auto RParToken::priority() -> int { return 10; }
 
 @expression_structs+=
 struct NumExpression : Expression
@@ -420,7 +457,10 @@ struct NumExpression : Expression
 };
 
 @num_token_methods=
-auto prefix(Parser*) -> std::shared_ptr<Expression> override
+auto prefix(Parser*) -> std::shared_ptr<Expression> override;
+
+@define_methods+=
+auto NumToken::prefix(Parser*) -> std::shared_ptr<Expression>
 {
 	return std::make_shared<NumExpression>(num);
 }
@@ -459,8 +499,11 @@ struct SymExpression : Expression
 	SymExpression(const std::string& name, std::shared_ptr<std::complex<float>> value) : name(name), value(value) {}
 };
 
-@sym_token_methods=
-auto prefix(Parser* p) -> std::shared_ptr<Expression> override
+@sym_token_methods+=
+auto prefix(Parser* p) -> std::shared_ptr<Expression> override;
+
+@define_methods+=
+auto SymToken::prefix(Parser* p) -> std::shared_ptr<Expression>
 {
 	return std::make_shared<SymExpression>(sym, p->getSymbol(sym));
 }
@@ -493,7 +536,10 @@ auto Parser::removeSymbol(const std::string& name) -> void
 symbol_table.erase(name);
 
 @lpar_token_methods+=
-auto infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expression> override
+auto infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expression> override;
+
+@define_methods+=
+auto LParToken::infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expression>
 {
 	static std::unordered_map<std::string, std::function<std::complex<float>(std::complex<float>)>> funs = {
 		@list_supported_functions
@@ -582,7 +628,11 @@ struct ExpExpression : Expression
 };
 
 @exp_token_methods=
-auto infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expression> override
+auto infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expression> override;
+auto priority() -> int override;
+
+@define_methods+=
+auto ExpToken::infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expression>
 {
 	auto t = p->parse(priority());
 	if(!t) {
@@ -591,7 +641,7 @@ auto infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expre
 
 	return std::make_shared<ExpExpression>(left, t);
 }
-auto priority() -> int override { return 70; }
+auto ExpToken::priority() -> int { return 70; }
 
 @define_methods+=
 auto ExpExpression::eval() -> std::complex<float> { return std::pow(left->eval(), right->eval()); }
@@ -841,7 +891,10 @@ if(nr) {
 }
 
 @sym_token_methods+=
-auto infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expression> override
+auto infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expression> override;
+
+@define_methods+=
+auto SymToken::infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expression>
 {
 	if(sym != "e") {
 		return nullptr;

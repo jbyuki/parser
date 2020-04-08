@@ -68,9 +68,13 @@ auto Parser::process(const std::string& input) -> std::shared_ptr<Expression>
 }
 
 
+auto Token::prefix(Parser* parser) -> std::shared_ptr<Expression> { return nullptr; }
+auto Token::infix(Parser* parser, std::shared_ptr<Expression> left) -> std::shared_ptr<Expression> { return nullptr; }
+auto Token::priority() -> int { return 0; }
+
 auto Parser::next() -> std::shared_ptr<Token>
 {
-	if(i >= tokens.size()) {
+	if(i >= (int)tokens.size()) {
 		return nullptr;
 	}
 
@@ -84,7 +88,7 @@ auto Parser::finish() -> bool
 
 auto Parser::get() -> std::shared_ptr<Token>
 {
-	if(i >= tokens.size()) {
+	if(i >= (int)tokens.size()) {
 		return nullptr;
 	}
 
@@ -108,7 +112,95 @@ auto Parser::parse(int p) -> std::shared_ptr<Expression>
 	return exp;
 }
 
+auto AddToken::prefix(Parser* p) -> std::shared_ptr<Expression>
+{
+	return p->parse(priority());
+}
 
+auto AddToken::infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expression>
+{
+	auto t = p->parse(priority());
+	if(!t) {
+		return nullptr;
+	}
+
+	return std::make_shared<AddExpression>(left, t);
+}
+
+auto AddToken::priority() -> int { return 50; }
+
+
+auto SubToken::prefix(Parser* p) -> std::shared_ptr<Expression>
+{
+	auto t = p->parse(90);
+	if(!t) {
+		return nullptr;
+	}
+
+	return std::make_shared<PrefixSubExpression>(t);
+}
+
+
+auto SubToken::infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expression>
+{
+	auto t = p->parse(priority()-1);
+	if(!t) {
+		return nullptr;
+	}
+	return std::make_shared<SubExpression>(left, t);
+}
+auto SubToken::priority() -> int { return 50; }
+
+auto MulToken::infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expression>
+{
+	auto t = p->parse(priority());
+	if(!t) {
+		return nullptr;
+	}
+
+	return std::make_shared<MulExpression>(left, t);
+}
+
+auto MulToken::priority() -> int { return 60; }
+
+
+auto DivToken::infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expression>
+{
+
+	auto t = p->parse(priority()-1);
+	if(!t) {
+		return nullptr;
+	}
+	return std::make_shared<DivExpression>(left, t);
+}
+
+auto DivToken::priority() -> int { return 60; }
+
+
+auto LParToken::prefix(Parser* p) -> std::shared_ptr<Expression>
+{
+	auto exp = p->parse(20);
+	if(!exp) {
+		return nullptr;
+	}
+
+	auto rpar = p->get();
+	if(!rpar || !std::dynamic_pointer_cast<RParToken>(rpar)) {
+		return nullptr;
+	}
+	p->next(); // skip rpar
+	
+	return exp;
+}
+
+auto LParToken::priority() -> int { return 100; }
+
+auto RParToken::priority() -> int { return 10; }
+
+auto NumToken::prefix(Parser*) -> std::shared_ptr<Expression>
+{
+	return std::make_shared<NumExpression>(num);
+}
 
 auto Parser::getSymbol(const std::string& name) -> std::shared_ptr<std::complex<float>>
 {
@@ -121,10 +213,50 @@ auto Parser::getSymbol(const std::string& name) -> std::shared_ptr<std::complex<
 	
 }
 
+auto SymToken::prefix(Parser* p) -> std::shared_ptr<Expression>
+{
+	return std::make_shared<SymExpression>(sym, p->getSymbol(sym));
+}
+
 auto Parser::removeSymbol(const std::string& name) -> void
 {
 	symbol_table.erase(name);
 	
+}
+
+auto LParToken::infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expression>
+{
+	static std::unordered_map<std::string, std::function<std::complex<float>(std::complex<float>)>> funs = {
+		{"sin", [](std::complex<float> x) { return std::sin(x); }},
+		{"cos", [](std::complex<float> x) { return std::cos(x); }},
+		{"tan", [](std::complex<float> x) { return std::tan(x); }},
+		{"ln", [](std::complex<float> x) { return std::log(x); }},
+		{"log", [](std::complex<float> x) { return std::log10(x); }},
+		{"exp", [](std::complex<float> x) { return std::exp(x); }},
+		{"sqrt", [](std::complex<float> x) { return std::sqrt(x); }},
+		{"asin", [](std::complex<float> x) { return std::asin(x); }},
+		{"acos", [](std::complex<float> x) { return std::acos(x); }},
+		{"atan", [](std::complex<float> x) { return std::atan(x); }},
+		{"abs", [](std::complex<float> x) { return std::abs(x); }},
+		{"arg", [](std::complex<float> x) { return std::arg(x); }},
+		
+	};
+
+	auto exp = p->parse(20);
+	if(!exp) {
+		return nullptr;
+	}
+
+	auto rpar = p->get();
+	if(!rpar || !std::dynamic_pointer_cast<RParToken>(rpar)) {
+		return nullptr;
+	}
+	p->next(); // skip rpar
+	
+
+	auto name = std::dynamic_pointer_cast<SymExpression>(left)->name;
+	p->removeSymbol(name); // remove function name as symbol
+	return std::make_shared<FunExpression>(name, funs[name], exp);
 }
 
 auto AddExpression::eval() -> std::complex<float> { return left->eval() + right->eval(); }
@@ -151,6 +283,17 @@ auto SymExpression::print() -> std::string { return "[sym " + name + "]"; }
 auto FunExpression::eval() -> std::complex<float> { return f(left->eval()); }
 auto FunExpression::print() -> std::string { return "([" + name + "] " + left->print() + ")"; }
 
+
+auto ExpToken::infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expression>
+{
+	auto t = p->parse(priority());
+	if(!t) {
+		return nullptr;
+	}
+
+	return std::make_shared<ExpExpression>(left, t);
+}
+auto ExpToken::priority() -> int { return 70; }
 
 auto ExpExpression::eval() -> std::complex<float> { return std::pow(left->eval(), right->eval()); }
 auto ExpExpression::print() -> std::string { return "(^ " + left->print() + " " + right->print() + ")"; }
@@ -371,4 +514,15 @@ auto ExpExpression::clone() -> std::shared_ptr<Expression>
 	return std::make_shared<ExpExpression>(left, right);
 }
 
+auto SymToken::infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expression>
+{
+	if(sym != "e") {
+		return nullptr;
+	}
+
+	auto right = p->parse(70); // SHOULD NOT be hardcoded here
+	auto base = std::make_shared<NumExpression>(10.f);
+	auto exp10 = std::make_shared<ExpExpression>(base, right);
+	return std::make_shared<MulExpression>(left, exp10);
+}
 

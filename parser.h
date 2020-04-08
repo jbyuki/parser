@@ -41,9 +41,9 @@ struct Expression
 
 struct Token
 {
-	virtual auto prefix(Parser* parser) -> std::shared_ptr<Expression> { return nullptr; }
-	virtual auto infix(Parser* parser, std::shared_ptr<Expression> left) -> std::shared_ptr<Expression> { return nullptr; }
-	virtual auto priority() -> int { return 0; }
+	virtual auto prefix(Parser* parser) -> std::shared_ptr<Expression>;
+	virtual auto infix(Parser* parser, std::shared_ptr<Expression> left) -> std::shared_ptr<Expression>;
+	virtual auto priority() -> int;
 };
 
 
@@ -198,152 +198,56 @@ struct ExpExpression : Expression
 
 struct AddToken : Token
 {
-	auto prefix(Parser* p) -> std::shared_ptr<Expression> override
-	{
-		return p->parse(priority());
-	}
+	auto prefix(Parser* p) -> std::shared_ptr<Expression> override;
 	
-	auto infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expression> override
-	{
-		auto t = p->parse(priority());
-		if(!t) {
-			return nullptr;
-		}
-	
-		return std::make_shared<AddExpression>(left, t);
-	}
-	auto priority() -> int override { return 50; }
+	auto infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expression> override;
+	auto priority() -> int override;
 	
 };
 
 struct SubToken : Token
 {
-	auto prefix(Parser* p) -> std::shared_ptr<Expression> override
-	{
-		auto t = p->parse(90);
-		if(!t) {
-			return nullptr;
-		}
+	auto prefix(Parser* p) -> std::shared_ptr<Expression> override;
 	
-		return std::make_shared<PrefixSubExpression>(t);
-	}
-	
-	
-	auto infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expression> override
-	{
-		auto t = p->parse(priority()-1);
-		if(!t) {
-			return nullptr;
-		}
-		return std::make_shared<SubExpression>(left, t);
-	}
-	auto priority() -> int override { return 50; }
+	auto infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expression> override;
+	auto priority() -> int override;
 	
 };
 
 struct MulToken : Token
 {
-	auto infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expression> override
-	{
-		auto t = p->parse(priority());
-		if(!t) {
-			return nullptr;
-		}
-	
-		return std::make_shared<MulExpression>(left, t);
-	}
-	
-	auto priority() -> int override { return 60; }
+	auto infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expression>;
+	auto priority() -> int override;
 	
 };
 
 struct DivToken : Token
 {
-	auto infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expression> override
-	{
-	
-		auto t = p->parse(priority()-1);
-		if(!t) {
-			return nullptr;
-		}
-		return std::make_shared<DivExpression>(left, t);
-	}
-	
-	auto priority() -> int override  { return 60; }
+	auto infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expression> override;
+	auto priority() -> int override;
 	
 };
 
 struct RParToken : Token
 {
-	auto priority() -> int override { return 10; }
+	auto priority() -> int override;
 	
 };
 
 struct LParToken : Token
 {
-	auto prefix(Parser* p) -> std::shared_ptr<Expression> override
-	{
-		auto exp = p->parse(20);
-		if(!exp) {
-			return nullptr;
-		}
+	auto prefix(Parser* p) -> std::shared_ptr<Expression> override;
 	
-		auto rpar = p->get();
-		if(!rpar || !std::dynamic_pointer_cast<RParToken>(rpar)) {
-			return nullptr;
-		}
-		p->next(); // skip rpar
-		
-		return exp;
-	}
+	auto priority() -> int override;
 	
-	auto priority() -> int override { return 100; }
-	
-	
-	auto infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expression> override
-	{
-		static std::unordered_map<std::string, std::function<std::complex<float>(std::complex<float>)>> funs = {
-			{"sin", [](std::complex<float> x) { return std::sin(x); }},
-			{"cos", [](std::complex<float> x) { return std::cos(x); }},
-			{"tan", [](std::complex<float> x) { return std::tan(x); }},
-			{"ln", [](std::complex<float> x) { return std::log(x); }},
-			{"log", [](std::complex<float> x) { return std::log10(x); }},
-			{"exp", [](std::complex<float> x) { return std::exp(x); }},
-			{"sqrt", [](std::complex<float> x) { return std::sqrt(x); }},
-			{"asin", [](std::complex<float> x) { return std::asin(x); }},
-			{"acos", [](std::complex<float> x) { return std::acos(x); }},
-			{"atan", [](std::complex<float> x) { return std::atan(x); }},
-			{"abs", [](std::complex<float> x) { return std::abs(x); }},
-			{"arg", [](std::complex<float> x) { return std::arg(x); }},
-			
-		};
-	
-		auto exp = p->parse(20);
-		if(!exp) {
-			return nullptr;
-		}
-	
-		auto rpar = p->get();
-		if(!rpar || !std::dynamic_pointer_cast<RParToken>(rpar)) {
-			return nullptr;
-		}
-		p->next(); // skip rpar
-		
-	
-		auto name = std::dynamic_pointer_cast<SymExpression>(left)->name;
-		p->removeSymbol(name); // remove function name as symbol
-		return std::make_shared<FunExpression>(name, funs[name], exp);
-	}
+	auto infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expression> override;
 	
 };
 
 
 struct NumToken : Token
 {
-	auto prefix(Parser*) -> std::shared_ptr<Expression> override
-	{
-		return std::make_shared<NumExpression>(num);
-	}
+	auto prefix(Parser*) -> std::shared_ptr<Expression> override;
 	
 	std::complex<float> num;
 
@@ -352,22 +256,10 @@ struct NumToken : Token
 
 struct SymToken : Token
 {
-	auto prefix(Parser* p) -> std::shared_ptr<Expression> override
-	{
-		return std::make_shared<SymExpression>(sym, p->getSymbol(sym));
-	}
+	auto prefix(Parser* p) -> std::shared_ptr<Expression> override;
 	
-	auto infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expression> override
-	{
-		if(sym != "e") {
-			return nullptr;
-		}
+	auto infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expression> override;
 	
-		auto right = p->parse(70); // SHOULD NOT be hardcoded here
-		auto base = std::make_shared<NumExpression>(10.f);
-		auto exp10 = std::make_shared<ExpExpression>(base, right);
-		return std::make_shared<MulExpression>(left, exp10);
-	}
 	std::string sym;
 
 	SymToken(std::string sym) : sym(sym) {}
@@ -375,16 +267,8 @@ struct SymToken : Token
 
 struct ExpToken : Token
 {
-	auto infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expression> override
-	{
-		auto t = p->parse(priority());
-		if(!t) {
-			return nullptr;
-		}
-	
-		return std::make_shared<ExpExpression>(left, t);
-	}
-	auto priority() -> int override { return 70; }
+	auto infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expression> override;
+	auto priority() -> int override;
 	
 };
 
