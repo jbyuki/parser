@@ -145,8 +145,11 @@ struct NumToken : Token
 	@num_token_methods
 	std::complex<float> num;
 
-	NumToken(std::complex<float> num) : num(num) {}
+	NumToken(std::complex<float> num);
 };
+
+@define_methods+=
+NumToken::NumToken(std::complex<float> num) : num(num) {}
 
 @tokenize_num=
 else if(c >= '0' && c <= '9') { 
@@ -160,8 +163,11 @@ struct SymToken : Token
 	@sym_token_methods
 	std::string sym;
 
-	SymToken(std::string sym) : sym(sym) {}
+	SymToken(std::string sym);
 };
+
+@define_methods+=
+SymToken::SymToken(std::string sym) : sym(sym) {}
 
 @includes+=
 #include <cctype>
@@ -295,8 +301,11 @@ struct AddExpression : Expression
 	@expression_virtual_methods
 	std::shared_ptr<Expression> left, right;
 
-	AddExpression(std::shared_ptr<Expression> left, std::shared_ptr<Expression> right) : left(left), right(right) {}
+	AddExpression(std::shared_ptr<Expression> left, std::shared_ptr<Expression> right);
 };
+
+@define_methods+=
+AddExpression::AddExpression(std::shared_ptr<Expression> left, std::shared_ptr<Expression> right) : left(left), right(right) {}
 
 @add_token_methods+=
 auto infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expression> override;
@@ -321,8 +330,11 @@ struct PrefixSubExpression : Expression
 {
 	@expression_virtual_methods
 	std::shared_ptr<Expression> left;
-	PrefixSubExpression(std::shared_ptr<Expression> left) : left(left) {}
+	PrefixSubExpression(std::shared_ptr<Expression> left);
 };
+
+@define_methods+=
+PrefixSubExpression::PrefixSubExpression(std::shared_ptr<Expression> left) : left(left) {}
 
 @sub_token_methods=
 auto prefix(Parser* p) -> std::shared_ptr<Expression> override;
@@ -344,8 +356,11 @@ struct SubExpression : Expression
 {
 	@expression_virtual_methods
 	std::shared_ptr<Expression> left, right;
-	SubExpression(std::shared_ptr<Expression> left, std::shared_ptr<Expression> right) : left(left), right(right) {}
+	SubExpression(std::shared_ptr<Expression> left, std::shared_ptr<Expression> right);
 };
+
+@define_methods+=
+SubExpression::SubExpression(std::shared_ptr<Expression> left, std::shared_ptr<Expression> right) : left(left), right(right) {}
 
 @sub_token_methods+=
 auto infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expression> override;
@@ -367,8 +382,11 @@ struct MulExpression : Expression
 {
 	@expression_virtual_methods
 	std::shared_ptr<Expression> left, right;
-	MulExpression(std::shared_ptr<Expression> left, std::shared_ptr<Expression> right) : left(left), right(right) {}
+	MulExpression(std::shared_ptr<Expression> left, std::shared_ptr<Expression> right);
 };
+
+@define_methods+=
+MulExpression::MulExpression(std::shared_ptr<Expression> left, std::shared_ptr<Expression> right) : left(left), right(right) {}
 
 @mul_token_methods=
 auto infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expression>;
@@ -393,8 +411,11 @@ struct DivExpression : Expression
 {
 	@expression_virtual_methods
 	std::shared_ptr<Expression> left, right;
-	DivExpression(std::shared_ptr<Expression> left, std::shared_ptr<Expression> right) : left(left), right(right) {}
+	DivExpression(std::shared_ptr<Expression> left, std::shared_ptr<Expression> right);
 };
+
+@define_methods+=
+DivExpression::DivExpression(std::shared_ptr<Expression> left, std::shared_ptr<Expression> right) : left(left), right(right) {}
 
 @div_token_methods=
 auto infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expression> override;
@@ -453,8 +474,11 @@ struct NumExpression : Expression
 {
 	@expression_virtual_methods
 	std::complex<float> num;
-	NumExpression(std::complex<float> num) : num(num) {}
+	NumExpression(std::complex<float> num);
 };
+
+@define_methods+=
+NumExpression::NumExpression(std::complex<float> num) : num(num) {}
 
 @num_token_methods=
 auto prefix(Parser*) -> std::shared_ptr<Expression> override;
@@ -496,8 +520,11 @@ struct SymExpression : Expression
 	@expression_virtual_methods
 	std::string name;
 	std::shared_ptr<std::complex<float>> value;
-	SymExpression(const std::string& name, std::shared_ptr<std::complex<float>> value) : name(name), value(value) {}
+	SymExpression(const std::string& name, std::shared_ptr<std::complex<float>> value);
 };
+
+@define_methods+=
+SymExpression::SymExpression(const std::string& name, std::shared_ptr<std::complex<float>> value) : name(name), value(value) {}
 
 @sym_token_methods+=
 auto prefix(Parser* p) -> std::shared_ptr<Expression> override;
@@ -519,8 +546,11 @@ struct FunExpression : Expression
 	std::string name;
 	std::function<std::complex<float>(std::complex<float>)> f;
 	std::shared_ptr<Expression> left;
-	FunExpression(const std::string& name, std::function<std::complex<float>(std::complex<float>)> f, std::shared_ptr<Expression> left) : name(name), f(f), left(left) {}
+	FunExpression(const std::string& name, std::function<std::complex<float>(std::complex<float>)> f, std::shared_ptr<Expression> left);
 };
+
+@define_methods+=
+FunExpression::FunExpression(const std::string& name, std::function<std::complex<float>(std::complex<float>)> f, std::shared_ptr<Expression> left) : name(name), f(f), left(left) {}
 
 
 @methods+=
@@ -624,8 +654,11 @@ struct ExpExpression : Expression
 	@expression_virtual_methods
 	std::shared_ptr<Expression> left, right;
 
-	ExpExpression(std::shared_ptr<Expression> left, std::shared_ptr<Expression> right) : left(left), right(right) {}
+	ExpExpression(std::shared_ptr<Expression> left, std::shared_ptr<Expression> right);
 };
+
+@define_methods+=
+ExpExpression::ExpExpression(std::shared_ptr<Expression> left, std::shared_ptr<Expression> right) : left(left), right(right) {}
 
 @exp_token_methods=
 auto infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expression> override;

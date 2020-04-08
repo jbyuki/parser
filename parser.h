@@ -83,7 +83,7 @@ struct AddExpression : Expression
 	
 	std::shared_ptr<Expression> left, right;
 
-	AddExpression(std::shared_ptr<Expression> left, std::shared_ptr<Expression> right) : left(left), right(right) {}
+	AddExpression(std::shared_ptr<Expression> left, std::shared_ptr<Expression> right);
 };
 
 struct PrefixSubExpression : Expression
@@ -96,7 +96,7 @@ struct PrefixSubExpression : Expression
 	auto clone() -> std::shared_ptr<Expression> override;
 	
 	std::shared_ptr<Expression> left;
-	PrefixSubExpression(std::shared_ptr<Expression> left) : left(left) {}
+	PrefixSubExpression(std::shared_ptr<Expression> left);
 };
 
 struct SubExpression : Expression
@@ -109,7 +109,7 @@ struct SubExpression : Expression
 	auto clone() -> std::shared_ptr<Expression> override;
 	
 	std::shared_ptr<Expression> left, right;
-	SubExpression(std::shared_ptr<Expression> left, std::shared_ptr<Expression> right) : left(left), right(right) {}
+	SubExpression(std::shared_ptr<Expression> left, std::shared_ptr<Expression> right);
 };
 
 struct MulExpression : Expression
@@ -122,7 +122,7 @@ struct MulExpression : Expression
 	auto clone() -> std::shared_ptr<Expression> override;
 	
 	std::shared_ptr<Expression> left, right;
-	MulExpression(std::shared_ptr<Expression> left, std::shared_ptr<Expression> right) : left(left), right(right) {}
+	MulExpression(std::shared_ptr<Expression> left, std::shared_ptr<Expression> right);
 };
 
 struct DivExpression : Expression
@@ -135,7 +135,7 @@ struct DivExpression : Expression
 	auto clone() -> std::shared_ptr<Expression> override;
 	
 	std::shared_ptr<Expression> left, right;
-	DivExpression(std::shared_ptr<Expression> left, std::shared_ptr<Expression> right) : left(left), right(right) {}
+	DivExpression(std::shared_ptr<Expression> left, std::shared_ptr<Expression> right);
 };
 
 struct NumExpression : Expression
@@ -148,7 +148,7 @@ struct NumExpression : Expression
 	auto clone() -> std::shared_ptr<Expression> override;
 	
 	std::complex<float> num;
-	NumExpression(std::complex<float> num) : num(num) {}
+	NumExpression(std::complex<float> num);
 };
 
 struct SymExpression : Expression
@@ -162,7 +162,7 @@ struct SymExpression : Expression
 	
 	std::string name;
 	std::shared_ptr<std::complex<float>> value;
-	SymExpression(const std::string& name, std::shared_ptr<std::complex<float>> value) : name(name), value(value) {}
+	SymExpression(const std::string& name, std::shared_ptr<std::complex<float>> value);
 };
 
 // function calls
@@ -178,9 +178,8 @@ struct FunExpression : Expression
 	std::string name;
 	std::function<std::complex<float>(std::complex<float>)> f;
 	std::shared_ptr<Expression> left;
-	FunExpression(const std::string& name, std::function<std::complex<float>(std::complex<float>)> f, std::shared_ptr<Expression> left) : name(name), f(f), left(left) {}
+	FunExpression(const std::string& name, std::function<std::complex<float>(std::complex<float>)> f, std::shared_ptr<Expression> left);
 };
-
 
 struct ExpExpression : Expression
 {
@@ -193,7 +192,7 @@ struct ExpExpression : Expression
 	
 	std::shared_ptr<Expression> left, right;
 
-	ExpExpression(std::shared_ptr<Expression> left, std::shared_ptr<Expression> right) : left(left), right(right) {}
+	ExpExpression(std::shared_ptr<Expression> left, std::shared_ptr<Expression> right);
 };
 
 struct AddToken : Token
@@ -251,7 +250,7 @@ struct NumToken : Token
 	
 	std::complex<float> num;
 
-	NumToken(std::complex<float> num) : num(num) {}
+	NumToken(std::complex<float> num);
 };
 
 struct SymToken : Token
@@ -262,7 +261,7 @@ struct SymToken : Token
 	
 	std::string sym;
 
-	SymToken(std::string sym) : sym(sym) {}
+	SymToken(std::string sym);
 };
 
 struct ExpToken : Token
