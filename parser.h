@@ -65,11 +65,4 @@ struct Expression
 	
 };
 
-struct Token
-{
-	virtual auto prefix(Parser* parser) -> std::shared_ptr<Expression>;
-	virtual auto infix(Parser* parser, std::shared_ptr<Expression> left) -> std::shared_ptr<Expression>;
-	virtual auto priority() -> int;
-};
-
 

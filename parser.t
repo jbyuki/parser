@@ -17,10 +17,11 @@ struct Parser
 };
 
 @base_expression_structs
-@base_token_struct
 
 @parser.cpp=
 #include "parser.h"
+
+@base_token_struct
 
 @expression_structs
 @token_struct
