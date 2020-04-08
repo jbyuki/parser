@@ -7,10 +7,8 @@
 #pragma once
 @includes
 
-struct Parser;
-
-@base_expression_structs
-@base_token_struct
+struct Token;
+struct Expression;
 
 struct Parser
 {
@@ -18,12 +16,14 @@ struct Parser
 	@member_variables
 };
 
-@expression_structs
-@token_struct
-
+@base_expression_structs
+@base_token_struct
 
 @parser.cpp=
 #include "parser.h"
+
+@expression_structs
+@token_struct
 
 @define_methods
 
