@@ -122,6 +122,39 @@ auto main() -> int
 	Parser parser;
 	auto a = parser.getSymbol("a");
 	*a = 4.f;
+	auto r = parser.process("-a-1");
+	test.assert_eq("-a-1 (where a = 4)", r->eval(), -5.f);
+	}
+	
+	{
+	Parser parser;
+	auto a = parser.getSymbol("a");
+	*a = 4.f;
+	auto r = parser.process("a-a-1");
+	test.assert_eq("a-a-1 (where a = 4)", r->eval(), -1.f);
+	}
+	
+	{
+	Parser parser;
+	auto a = parser.getSymbol("a");
+	*a = 4.f;
+	auto r = parser.process("a-1");
+	test.assert_eq("a-1 (where a = 4)", r->eval(), 3.f);
+	}
+	
+	{
+	Parser parser;
+	auto a = parser.getSymbol("a");
+	*a = 4.f;
+	auto r = parser.process("a^2-a-1");
+	test.assert_eq("a^2-a-1 (where a = 4)", r->eval(), 11.f);
+	}
+	
+	
+	{
+	Parser parser;
+	auto a = parser.getSymbol("a");
+	*a = 4.f;
 	auto b = parser.getSymbol("b");
 	*b = 3.f;
 	auto r = parser.process("a^2*b");

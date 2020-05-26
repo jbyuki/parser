@@ -361,7 +361,7 @@ SubExpression::SubExpression(std::shared_ptr<Expression> left, std::shared_ptr<E
 
 auto SubToken::infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expression>
 {
-	auto t = p->parse(priority()-1);
+	auto t = p->parse(priority()+1);
 	if(!t) {
 		return nullptr;
 	}
@@ -389,7 +389,7 @@ DivExpression::DivExpression(std::shared_ptr<Expression> left, std::shared_ptr<E
 auto DivToken::infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expression>
 {
 
-	auto t = p->parse(priority()-1);
+	auto t = p->parse(priority()+1);
 	if(!t) {
 		return nullptr;
 	}

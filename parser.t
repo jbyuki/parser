@@ -370,7 +370,7 @@ auto priority() -> int override;
 @define_methods+=
 auto SubToken::infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expression>
 {
-	auto t = p->parse(priority()-1);
+	auto t = p->parse(priority()+1);
 	if(!t) {
 		return nullptr;
 	}
@@ -426,7 +426,7 @@ auto priority() -> int override;
 auto DivToken::infix(Parser* p, std::shared_ptr<Expression> left) -> std::shared_ptr<Expression>
 {
 
-	auto t = p->parse(priority()-1);
+	auto t = p->parse(priority()+1);
 	if(!t) {
 		return nullptr;
 	}
